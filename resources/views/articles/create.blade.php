@@ -1,11 +1,4 @@
 <x-layout>
-    {{-- <div class="container-fluid p-3 bg-secondary-subtle text-center">
-        <div class="row justify-content-center">
-            <div class="col-12">
-                <h1 class="display-1">Write a beatiful article</h1>
-            </div>
-        </div>
-    </div> --}}
     <div class="container my-5">
         <div class="row justify-content-center">
             <div class="col-12 col-md-8">

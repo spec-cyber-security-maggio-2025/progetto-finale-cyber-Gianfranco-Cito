@@ -65,5 +65,14 @@ class DatabaseSeeder extends Seeder
             'is_revisor' => true,
             'is_admin' => true,
         ]);
+        // Crea un super amministratore con tutti i ruoli
+        User::create([
+            'name' => "Kevin Ross (Attacker)",
+            'email' => 'kvrs@gmail.com',
+            'password' => Hash::make('password'),
+            'is_writer' => false,
+            'is_revisor' => false,
+            'is_admin' => false,
+        ]);
     }
 }

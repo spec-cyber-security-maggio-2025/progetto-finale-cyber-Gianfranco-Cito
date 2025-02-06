@@ -60,14 +60,18 @@
                         <th scope="row">5</th>
                         <td>super.admin@aulab.it</td>
                       </tr>
+                      <tr>
+                        <th scope="row">5</th>
+                        <td>kvrs@gmail.com</td>
+                      </tr>
                     </tbody>
                 </table>
                 <div>
                     Instructions:
                     <ul>
                         <li>Set aliases in hosts file [read documentation]</li>
-                        <li>For user/writer/revisor go to <a href="http://external.user:8000">http://external.user:8000</a></li>
-                        <li>For admin/super admin go to <a href="http://internal.user:8000">http://internal.user:8000</a></li>
+                        <li>For user/writer/revisor go to <a href="http://cyber.blog:8000">http://cyber.blog:8000</a></li>
+                        <li>For admin/super admin go to <a href="http://internal.admin:8000">http://internal.admin:8000</a></li>
                         <li>Passowrd is <b>password</b> for every user</li>
                     </ul>
                 </div>
