@@ -59,3 +59,4 @@ Supponiamo che ci sia una misconfiguration a livello di CORS (config/cors.php) c
 ### Mitigazione
 Creare un meccanismo che filtri il testo prima di salvarlo e per essere sicuri anche in fase di visualizzazione dell'articolo.
 
+# -progetto-finale-cyber-Gianfranco-Cito
