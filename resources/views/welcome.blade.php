@@ -1,4 +1,5 @@
 <x-layout>
+    
     <div class="container-fluid p-5 bg-secondary-subtle text-center">
         <div class="row justify-content-center" style="height: 50vh">
             <div class="col-12 d-flex flex-column justify-content-around">

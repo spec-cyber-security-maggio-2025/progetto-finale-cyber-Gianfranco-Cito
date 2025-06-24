@@ -11,6 +11,8 @@
         "laravel/scout": "^10.8",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
+        "nesbot/carbon": "^2.72.2",
+        "symfony/translation": "^6.4",
         "teamtnt/laravel-scout-tntsearch-driver": "^14.0"
     },
     "require-dev": {
