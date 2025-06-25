@@ -204,6 +204,8 @@ Un attacco DoS era stato simulato in precedenza. Tuttavia:
   <li>Blocco IP tramite rate limiting nel metodo <code>articleSearch()</code></li>
 </ul>
 
+
+
 <h3>4. Esempio di log generato</h3>
 <pre style="background:#f4f4f4; padding:12px; border-left:4px solid #2ecc71;">
 [2025-06-25 15:30:12] local.INFO: 📝 Articolo creato {"id":12,"titolo":"Cybersecurity nella Sanità","autore":5,"ip":"127.0.0.1"}
@@ -211,11 +213,23 @@ Un attacco DoS era stato simulato in precedenza. Tuttavia:
 [2025-06-25 15:33:10] local.INFO: Login effettuato {"utente":5,"email":"admin@cyber.blog","ip":"127.0.0.1","timestamp":"2025-06-25 15:33:10"}
 </pre>
 
+![1](https://github.com/user-attachments/assets/2b7ff08c-2920-4c60-be0b-b143ea82e22b)
+
+![2](https://github.com/user-attachments/assets/ccd5d9cd-efce-43a4-a9fa-5d1310675b7f)
+
+![3](https://github.com/user-attachments/assets/6b7a5c25-96f9-4a35-ac41-54ff91dbccb3)
+
+
+
+
 <h3>5. Verifica</h3>
 <p>
 Consultando il file <code>storage/logs/laravel.log</code> è ora possibile risalire ad ogni operazione sensibile,
 facilitando audit trail e analisi post-attacco.
 </p>
+
+![4](https://github.com/user-attachments/assets/91d1b6c6-835b-4181-96bd-725aa867f3a4)
+
 
 <p style="margin-top: 30px;"><strong>✅ Challenge completata con successo.</strong></p>
 
