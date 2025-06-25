@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Tag;
 use App\Models\User;
 use App\Models\Article;
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
+
+
+use Illuminate\Support\Facades\Cache;
+
+
+
 
 class ArticleController extends Controller implements HasMiddleware
 {
@@ -169,9 +176,42 @@ class ArticleController extends Controller implements HasMiddleware
         return view('articles.by-user', compact('user', 'articles'));
     }
 
-    public function articleSearch(Request $request){
-        $query = $request->input('query');
-        $articles = Article::search($query)->where('is_accepted', true)->orderBy('created_at', 'desc')->get();
-        return view('articles.search-index', compact('articles', 'query'));
+ public function articleSearch(Request $request)
+{
+    $ip = $request->ip();
+    $attemptKey = "rate_limit:$ip";
+    $blockKey = "block_ip:$ip";
+
+    // 🔒 Se l'IP è bloccato
+    if (Cache::has($blockKey)) {
+        return response("⛔ IP bloccato per 10 minuti", 429);
     }
+
+    // 📈 Conta accessi nell'ultimo minuto
+    $attempts = Cache::get($attemptKey, 0);
+
+    if ($attempts >= 10) {
+        Cache::put($blockKey, true, now()->addMinutes(10));
+        Cache::forget($attemptKey);
+        Log::warning("🚫 IP $ip bloccato per 10 minuti");
+        return response("⛔ IP $ip bloccato", 429);
+    }
+
+    // Incrementa tentativi
+    Cache::add($attemptKey, 0, 60); // cache per 60 secondi
+    Cache::increment($attemptKey);
+
+    Log::info("✅ $ip ha fatto ".($attempts+1)." richieste");
+
+    // 🔍 Logica di ricerca vera
+    $query = $request->input('query');
+    $articles = Article::search($query)
+        ->where('is_accepted', true)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return view('articles.search-index', compact('articles', 'query'));
+}
+
+    
 }

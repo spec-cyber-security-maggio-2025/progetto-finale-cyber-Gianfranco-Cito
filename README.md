@@ -1,65 +1,52 @@
 ## Rate limiter mancante
 
-### Scenario:
-Creare ed eseguire uno script (es. in bash con curl) che lancia moltissime richieste sulla stessa rotta con il pericolo di un denial of service
-
-### Mitigazione:
-- Rate limiter su /careers/submit
-- Rate limiter su /article/search
-- Rate limiter globale
-
-## Logging mancante per operazioni critiche
-
-### Scenario:
-Sui tentativi precedenti di DoS non si può risalire al colpevole violando il principiio di accountability e no repudiation
-
-### Mitigazione:
-Log di:
-- login/registrazione/logout
-- creazione/modifica/eliminazione articolo
-- assegnazione/cambi di ruolo
-
-## Operazioni critiche in post e non in get
-
-### Scenario: 
-Ci si espone a possibili attacchi CSRF portando in questo caso ad una vertical escalation of privileges.
-Provare un attacco csrf creando un piccolo server php che visualizzi una pagina html in cui in background scatta una chiamata ajax ad una rotta potenzialmente critica e non protetta (es. /admin/{user}/set-admin). Partendo dal browser dell'utente è possibile che l'azione vada in porto in quanto l'utente ha i privilegi adeguati.
-
-### Mitigazione
-Cambiare da get a post, facendo i dovuti controlli
-
-## Uso non corretto di fillable nei modelli
-
-### Scenario 
-Un utente malevolo può provare a indovinare campi tipici di ruoli utente tipo isAdmin, is_admin etc.. alterando il form dal browser 
-
-### Mitigazione
-Nella proprietà fillable del modello in questione inserire tutti solo i campi gestiti nel form
-
-## ssrf attack per api delle news
-
-### Scenario
-Esiste la funzionalità di suggerimento news recenti in fase di scrittura dell'articolo per prendere ispirazione. E' presente un menu a scelta facilmente alterabile da ispeziona elemento. L'utente malintenzionato con un minimo di conoscenza del sistema cambia l'url e prova a far lanciare al server una richiesta che lui non sarebbe autorizzato.
-Per esempio il server recupera dei dati sugli utenti da un altro server in esecuzione sulla porta 8001. 
-
-
-### Mitigazione
-Rimodellare la funzionalità in modo tale da non poter lasciare spazio di modifica dell'url da parte di utenti malevoli. Implementare o migliorare la validazione delgli input.
-
-https://newsapi.org/docs/endpoints/top-headlines
-NewsAPI - api key 5fbe92849d5648eabcbe072a1cf91473
-
-## Stored XSS Attack
-
-### Scenario
-Durante la creazione di un articlo si può manomettere il body della richiesta con un tool tipo burpsuite in modalità proxy in modo da evitare l'auto escape eseguito dall'editor stesso e far arrivare alla funzionalità di creazione articolo uno script malevelo nel testo.
-Questo script verra memorizzato ed eseguito quando un utente visualizza l'articolo infettato.
-Supponiamo che ci sia una misconfiguration a livello di CORS (config/cors.php) che quindi permetta richieste da domini esterni, utile quando frontend e backend sono separati ma se non opportunamente configurato risulta essere un grave problema.
-
-### Mitigazione
-Creare un meccanismo che filtri il testo prima di salvarlo e per essere sicuri anche in fase di visualizzazione dell'articolo.
-
-# -progetto-finale-cyber-Gianfranco-Cito
-# -progetto-finale-cyber-Gianfranco-Cito
-# progetto-finale-cyber-Gianfranco-Cito
+CHALLENGE 1: Rate limiter mancante
+ Autore: Gianfranco Cito
+ 1. Descrizione dell'attacco
+ È stato simulato un attacco DoS (Denial of Service) sulla rotta pubblica /articles/search, inviando
+ numerose richieste consecutive tramite uno script bash. In assenza di limitazioni, il server accetta
+ tutte le richieste, causando un sovraccarico potenziale.
+ Script utilizzato:
+ #!/bin/bash
+ URL="http://cyber.blog:8000/articles/search?query=test"
+ for i in {1..50}
+ do
+  curl -s $URL > /dev/null &
+ done
+ wait
+ echo "Attacco completato"
+ Eseguendo lo script si è verificato che il server rispondeva correttamente a tutte le richieste,
+ dimostrando l'assenza iniziale di una protezione contro attacchi di tipo DoS.
+ Screenshot effetto attacco (INSERIRE QUI):
+ 2. Mitigazione nel controller (senza middleware)
+ La protezione è stata implementata direttamente nel metodo articleSearch() del controller, senza
+ utilizzare middleware. Dopo 10 richieste consecutive da uno stesso IP entro 60 secondi, l'IP viene
+ bloccato per 10 minuti. Ogni ulteriore richiesta durante il blocco riceve un errore 429.
+ Codice implementato:
+ public function articleSearch(Request $request)
+ {
+    $ip = $request->ip();
+    $attemptKey = "rate_limit:$ip";
+    $blockKey = "block_ip:$ip";
+    if (Cache::has($blockKey)) {
+        return response("IP bloccato per 10 minuti", 429);
+    }
+    $attempts = Cache::get($attemptKey, 0);
+    if ($attempts >= 10) {
+        Cache::put($blockKey, true, now()->addMinutes(10));
+        Cache::forget($attemptKey);
+        return response("IP bloccato", 429);
+    }
+    Cache::add($attemptKey, 0, 60);
+    Cache::increment($attemptKey);
+    $query = $request->input('query');
+    $articles = Article::search($query)
+        ->where('is_accepted', true)
+        ->orderBy('created_at', 'desc')
+        ->get();
+    return view('articles.search-index', compact('articles', 'query'));
+ }
+ Dopo l'implementazione, lo script DoS riceve correttamente risposte HTTP 429 dopo 10 richieste.
+ L'attacco è quindi mitigato con successo.
+ Screenshot post-mitigazione (INSERIRE QUI)
 # progetto-finale-cyber-Gianfranco-Cito
