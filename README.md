@@ -171,40 +171,56 @@ Dopo la modifica, se l’attaccante prova a rieseguire la pagina HTML maliziosa,
 </p>
 
 
+<h2 style="color:#2c3e50;">🔐 CHALLENGE 3: Logs mancanti per operazioni critiche</h2>
+<p><strong>Autore:</strong> Gianfranco Cito</p>
 
-    <h1 style="color: #2c3e50;">CHALLENGE 3: Logs mancanti per operazioni critiche</h1>
-    <h2>Autore: Gianfranco Cito</h2>
+<h3>1. Descrizione del problema</h3>
+<p>
+Nel sistema originario mancavano log per le operazioni critiche, come accessi, registrazioni, creazione, modifica ed eliminazione di articoli e cambi di ruolo utente. 
+L'assenza di questi log rendeva impossibile attribuire responsabilità in caso di attacchi 
+(<em>violazione dei principi di accountability e non-repudiation</em>).
+</p>
 
-    <h3>1. Descrizione del problema</h3>
-    <p>Nel sistema originario mancavano log per le operazioni critiche, come accessi, registrazioni, creazione, modifica ed eliminazione di articoli e cambi di ruolo utente. L'assenza di questi log rendeva impossibile attribuire responsabilità in caso di attacchi (violazione del principio di accountability e non-repudiation).</p>
+<h3>2. Attacco simulato</h3>
+<p>
+Un attacco DoS era stato simulato in precedenza. Tuttavia:
+<ul>
+  <li>Nessuna informazione sull’IP dell’attaccante</li>
+  <li>Nessun tracciamento delle modifiche agli utenti</li>
+  <li>Nessun log per le eliminazioni articoli</li>
+</ul>
+</p>
 
-    <h3>2. Attacco simulato</h3>
-    <p>Un attacco DoS era stato simulato in precedenza. Tuttavia, nessuna informazione relativa all’IP dell’attaccante o agli utenti coinvolti veniva salvata nei file di log. Stesso discorso per la promozione utenti o eliminazione articoli.</p>
+<h3>3. Mitigazione implementata</h3>
+<p>
+È stato integrato il sistema di logging di Laravel con chiamate a <code>Log::info()</code> e <code>Log::warning()</code> nei punti critici.
+</p>
 
-    <h3>3. Mitigazione implementata</h3>
-    <p>È stato integrato il sistema di logging di Laravel con chiamate a <code>Log::info()</code> e <code>Log::warning()</code> in punti critici dell’applicazione.</p>
+<h4>✔️ Logging implementato in:</h4>
+<ul>
+  <li>Login, logout, registrazione utente (tramite Event e Listener)</li>
+  <li>Promozione utenti a ruoli speciali (admin, revisor, writer)</li>
+  <li>Creazione, modifica, eliminazione articoli</li>
+  <li>Blocco IP tramite rate limiting nel metodo <code>articleSearch()</code></li>
+</ul>
 
-    <h4>✔️ Logging implementato nei seguenti punti:</h4>
-    <ul>
-        <li>Login, logout, registrazione utente (via <code>EventServiceProvider</code> e listener dedicati)</li>
-        <li>Promozione utenti a ruoli speciali (admin, revisor, writer)</li>
-        <li>Creazione, modifica, eliminazione articoli</li>
-        <li>Rate limiting IP nel controller search</li>
-    </ul>
-
-    <h3>4. Esempio di log generato</h3>
-    <pre style="background: #eee; padding: 10px; border-left: 4px solid #2ecc71;">
+<h3>4. Esempio di log generato</h3>
+<pre style="background:#f4f4f4; padding:12px; border-left:4px solid #2ecc71;">
 [2025-06-25 15:30:12] local.INFO: 📝 Articolo creato {"id":12,"titolo":"Cybersecurity nella Sanità","autore":5,"ip":"127.0.0.1"}
 [2025-06-25 15:31:02] local.WARNING: 🗑️ Articolo eliminato {"id":9,"titolo":"Attacco XSS","eliminato_da":5,"ip":"127.0.0.1"}
 [2025-06-25 15:33:10] local.INFO: Login effettuato {"utente":5,"email":"admin@cyber.blog","ip":"127.0.0.1","timestamp":"2025-06-25 15:33:10"}
-    </pre>
+</pre>
 
-    <h3>5. Verifica</h3>
-    <p>Consultando <code>storage/logs/laravel.log</code> è possibile ora risalire ad ogni operazione sensibile, facilitando l’audit e l’analisi post-attacco.</p>
+<h3>5. Verifica</h3>
+<p>
+Consultando il file <code>storage/logs/laravel.log</code> è ora possibile risalire ad ogni operazione sensibile,
+facilitando audit trail e analisi post-attacco.
+</p>
 
-    <p style="margin-top: 30px;"><strong>Challenge completata con successo ✅</strong></p>
-</body>
-</html>
+<p style="margin-top: 30px;"><strong>✅ Challenge completata con successo.</strong></p>
+
+
+
 
 
 
