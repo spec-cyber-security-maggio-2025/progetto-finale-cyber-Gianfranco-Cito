@@ -7,6 +7,9 @@ CHALLENGE 1: Rate limiter mancante
  È stato simulato un attacco DoS (Denial of Service) sulla rotta pubblica /articles/search, inviando
  numerose richieste consecutive tramite uno script bash. In assenza di limitazioni, il server accetta
  tutte le richieste, causando un sovraccarico potenziale.
+
+
+
  Script utilizzato:
  #!/bin/bash
  URL="http://cyber.blog:8000/articles/search?query=test"
@@ -62,6 +65,9 @@ CHALLENGE 1: Rate limiter mancante
         ->get();
     return view('articles.search-index', compact('articles', 'query'));
  }
+
+
+ 
 
 
  
