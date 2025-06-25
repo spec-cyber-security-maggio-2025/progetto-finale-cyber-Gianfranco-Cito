@@ -231,7 +231,7 @@ facilitando audit trail e analisi post-attacco.
 ![4](https://github.com/user-attachments/assets/91d1b6c6-835b-4181-96bd-725aa867f3a4)
 
 
-<p style="margin-top: 30px;"><strong>✅ Challenge completata con successo.</strong></p>
+
 
 
 
