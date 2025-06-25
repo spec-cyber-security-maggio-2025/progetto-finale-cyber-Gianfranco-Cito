@@ -55,25 +55,58 @@ class AdminController extends Controller
     }
 
     public function setAdmin(User $user){
-        $user->is_admin = true;
-        $user->save();
+    $user->is_admin = true;
+    $user->save();
 
-        return redirect(route('admin.dashboard'))->with('message', "$user->name is now administrator");
-    }
+    Log::warning("Assegnazione ruolo ADMIN", [
+        'assegnato_a' => $user->id,
+        'eseguito_da' => Auth::id(),
+        'ip' => request()->ip(),
+        'timestamp' => now()
+    ]);
 
-    public function setRevisor(User $user){
-        $user->is_revisor = true;
-        $user->save();
+    return redirect(route('admin.dashboard'))->with('message', "$user->name is now administrator");
+}
 
-        return redirect(route('admin.dashboard'))->with('message', "$user->name is now revisor");
-    }
+public function setRevisor(User $user){
+    $user->is_revisor = true;
+    $user->save();
 
-    public function setWriter(User $user){
-        $user->is_writer = true;
-        $user->save();
+    Log::info("Assegnazione ruolo REVISOR", [
+        'assegnato_a' => $user->id,
+        'eseguito_da' => Auth::id(),
+        'ip' => request()->ip(),
+        'timestamp' => now()
+    ]);
 
-        return redirect(route('admin.dashboard'))->with('message', "$user->name is now writer");
-    }
+    return redirect(route('admin.dashboard'))->with('message', "$user->name is now revisor");
+}
+
+public function setWriter(User $user){
+    $user->is_writer = true;
+    $user->save();
+
+    Log::info("Assegnazione ruolo WRITER", [
+        'assegnato_a' => $user->id,
+        'eseguito_da' => Auth::id(),
+        'ip' => request()->ip(),
+        'timestamp' => now()
+    ]);
+
+    return redirect(route('admin.dashboard'))->with('message', "$user->name is now writer");
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function editTag(Request $request, Tag $tag){
         $request->validate([
@@ -106,10 +139,17 @@ class AdminController extends Controller
     }
 
     public function deleteCategory(Category $category){
-        $category->delete();
+    Log::warning("Eliminazione categoria", [
+        'categoria' => $category->name,
+        'eseguito_da' => Auth::id(),
+        'ip' => request()->ip(),
+        'timestamp' => now()
+    ]);
 
-        return redirect()->back()->with('message', 'Category successfully deleted');
-    }
+    $category->delete();
+    return redirect()->back()->with('message', 'Category successfully deleted');
+}
+
 
     public function storeCategory(Request $request){
         $category = Category::create([

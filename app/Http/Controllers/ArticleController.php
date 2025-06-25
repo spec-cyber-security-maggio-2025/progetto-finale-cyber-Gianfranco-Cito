@@ -51,39 +51,45 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|unique:articles|min:5',
-            'subtitle' => 'required|min:5',
-            'body' => 'required|min:10',
-            'image' => 'required|image',
-            'category' => 'required',
-            'tags' => 'required'
+         $request->validate([
+        'title' => 'required|unique:articles|min:5',
+        'subtitle' => 'required|min:5',
+        'body' => 'required|min:10',
+        'image' => 'required|image',
+        'category' => 'required',
+        'tags' => 'required'
+    ]);
+
+    $article = Article::create([
+        'title' => $request->title,
+        'subtitle' => $request->subtitle,
+        'body' => $request->body,
+        'image' => $request->file('image')->store('public/images'),
+        'category_id' => $request->category,
+        'user_id' => Auth::user()->id,
+        'slug' => Str::slug($request->title),
+    ]);
+
+    $tags = explode(',', $request->tags);
+    foreach($tags as $i => $tag) {
+        $tags[$i] = trim($tag);
+    }
+
+    foreach($tags as $tag) {
+        $newTag = Tag::updateOrCreate([
+            'name' => strtolower($tag)
         ]);
+        $article->tags()->attach($newTag);
+    }
 
-        $article = Article::create([
-            'title' => $request->title,
-            'subtitle' => $request->subtitle,
-            'body' => $request->body,
-            'image' => $request->file('image')->store('public/images'),
-            'category_id' => $request->category,
-            'user_id' => Auth::user()->id,
-            'slug' => Str::slug($request->title),
-        ]);
-        
-        $tags = explode(',', $request->tags);
+    Log::info('📝 Articolo creato', [
+        'id' => $article->id,
+        'titolo' => $article->title,
+        'autore' => Auth::user()->id,
+        'ip' => $request->ip()
+    ]);
 
-        foreach($tags as $i => $tag){
-            $tags[$i] = trim($tag);
-        }
-
-        foreach($tags as $tag){
-            $newTag = Tag::updateOrCreate([
-                'name' => strtolower($tag)
-            ]);
-            $article->tags()->attach($newTag);
-        }
-
-        return redirect(route('homepage'))->with('message', 'Articolo creato con successo');
+    return redirect(route('homepage'))->with('message', 'Articolo creato con successo');
     }
 
     /**
@@ -110,47 +116,52 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function update(Request $request, Article $article)
     {
-        $request->validate([
-            'title' => 'required|min:5|unique:articles,title,' . $article->id,
-            'subtitle' => 'required|min:5',
-            'body' => 'required|min:10',
-            'image' => 'image',
-            'category' => 'required',
-            'tags' => 'required'
-        ]);
+         $request->validate([
+        'title' => 'required|min:5|unique:articles,title,' . $article->id,
+        'subtitle' => 'required|min:5',
+        'body' => 'required|min:10',
+        'image' => 'image',
+        'category' => 'required',
+        'tags' => 'required'
+    ]);
 
+    $article->update([
+        'title' => $request->title,
+        'subtitle' => $request->subtitle,
+        'body' => $request->body,
+        'category_id' => $request->category,
+        'slug' => Str::slug($request->title),
+    ]);
+
+    if ($request->image) {
+        Storage::delete($article->image);
         $article->update([
-            'title' => $request->title,
-            'subtitle' => $request->subtitle,
-            'body' => $request->body,
-            'category_id' => $request->category,
-            'slug' => Str::slug($request->title),
+            'image' => $request->file('image')->store('public/images')
         ]);
+    }
 
-        if($request->image){
-            Storage::delete($article->image);
-            $article->update([
-                'image' => $request->file('image')->store('public/images')
-            ]);
-        }
-        
-        $tags = explode(',', $request->tags);
+    $tags = explode(',', $request->tags);
+    foreach ($tags as $i => $tag) {
+        $tags[$i] = trim($tag);
+    }
 
-        foreach($tags as $i => $tag){
-            $tags[$i] = trim($tag);
-        }
+    $newTags = [];
+    foreach ($tags as $tag) {
+        $newTag = Tag::updateOrCreate([
+            'name' => strtolower($tag)
+        ]);
+        $newTags[] = $newTag->id;
+    }
+    $article->tags()->sync($newTags);
 
-        $newTags = [];
+    Log::info('✏️ Articolo modificato', [
+        'id' => $article->id,
+        'titolo' => $article->title,
+        'modificato_da' => Auth::user()->id,
+        'ip' => $request->ip()
+    ]);
 
-        foreach($tags as $tag){
-            $newTag = Tag::updateOrCreate([
-                'name' => strtolower($tag)
-            ]);
-            $newTags[] = $newTag->id;
-        }
-        $article->tags()->sync($newTags);
-
-        return redirect(route('writer.dashboard'))->with('message', 'Articolo modificato con successo');
+    return redirect(route('writer.dashboard'))->with('message', 'Articolo modificato con successo');
     }
 
     /**
@@ -158,12 +169,23 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function destroy(Article $article)
     {
-        foreach ($article->tags as $tag) {
-            $article->tags()->detach($tag);
-        }
-        $article->delete();
-        
-        return redirect()->back()->with('message', 'Articolo cancellato con successo');
+         foreach ($article->tags as $tag) {
+        $article->tags()->detach($tag);
+    }
+
+    $deletedTitle = $article->title;
+    $deletedId = $article->id;
+
+    $article->delete();
+
+    Log::warning('🗑️ Articolo eliminato', [
+        'id' => $deletedId,
+        'titolo' => $deletedTitle,
+        'eliminato_da' => Auth::user()->id,
+        'ip' => request()->ip()
+    ]);
+
+    return redirect()->back()->with('message', 'Articolo cancellato con successo');
     }
 
     public function byCategory(Category $category){
