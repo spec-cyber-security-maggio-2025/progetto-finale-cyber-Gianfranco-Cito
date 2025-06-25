@@ -34,6 +34,11 @@ CHALLENGE 1: Rate limiter mancante
  utilizzare middleware. Dopo 10 richieste consecutive da uno stesso IP entro 60 secondi, l'IP viene
  bloccato per 10 minuti. Ogni ulteriore richiesta durante il blocco riceve un errore 429.
  Codice implementato:
+
+
+<?php
+
+
  public function articleSearch(Request $request)
  {
     $ip = $request->ip();
@@ -57,6 +62,9 @@ CHALLENGE 1: Rate limiter mancante
         ->get();
     return view('articles.search-index', compact('articles', 'query'));
  }
+
+
+ 
  Dopo l'implementazione, lo script DoS riceve correttamente risposte HTTP 429 dopo 10 richieste.
  L'attacco è quindi mitigato con successo.
 
