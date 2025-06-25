@@ -171,6 +171,58 @@ Dopo la modifica, se l’attaccante prova a rieseguire la pagina HTML maliziosa,
 </p>
 
 
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Progetto finale Cybersecurity - Gianfranco Cito</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #fcfcfc; color: #333;">
+    <h1 style="color: #2c3e50;">📚 Progetto finale Cybersecurity</h1>
+    <h2>👤 Autore: Gianfranco Cito</h2>
+
+    <!-- CHALLENGE 1 -->
+    <h2>🔥 CHALLENGE 1: Rate limiter mancante</h2>
+    <p>... (contenuto già presente inserito dall’utente) ...</p>
+
+    <!-- CHALLENGE 2 -->
+    <h2>🔐 CHALLENGE 2: Operazioni critiche in GET (CSRF Attack)</h2>
+    <p>... (contenuto già presente inserito dall’utente) ...</p>
+
+    <!-- CHALLENGE 3 -->
+    <h2>🕵️ CHALLENGE 3: Logs mancanti per operazioni critiche</h2>
+    <p><strong>Scenario:</strong> Il sistema non tracciava operazioni sensibili come login, promozioni di utenti, o gestione articoli. Ciò violava i principi di <em>accountability</em> e <em>non-repudiation</em>.</p>
+
+    <h3>1. Attacco</h3>
+    <p>Durante i test (es. attacco DoS o modifica dei ruoli) non venivano registrate informazioni su utenti, IP o timestamp. Nessuna evidenza forense era disponibile.</p>
+
+    <h3>2. Mitigazione</h3>
+    <ul>
+        <li>✔️ Log automatici su login/logout/registrazione tramite eventi Laravel</li>
+        <li>✔️ Log delle promozioni utenti nei metodi <code>setAdmin</code>, <code>setRevisor</code>, <code>setWriter</code></li>
+        <li>✔️ Log su creazione, modifica, eliminazione articoli</li>
+        <li>✔️ Log nei rate limiter (tentativi e blocchi)</li>
+    </ul>
+
+    <p>Esempio log creato in <code>storage/logs/laravel.log</code>:</p>
+    <pre style="background:#eee; padding:10px;">
+[2025-06-25 15:30:12] local.INFO: 📝 Articolo creato {"id":12,"titolo":"Cybersecurity","autore":5,"ip":"127.0.0.1"}
+[2025-06-25 15:31:02] local.WARNING: 🗑️ Articolo eliminato {"id":9,"titolo":"XSS","eliminato_da":5,"ip":"127.0.0.1"}
+[2025-06-25 15:33:10] local.INFO: Login effettuato {"utente":5,"email":"admin@cyber.blog","ip":"127.0.0.1"}
+    </pre>
+
+    <h3>3. Conclusione</h3>
+    <p>
+        ✅ Ora ogni operazione critica è monitorata.<br>
+        ✅ I log consentono audit, investigazioni e attribuzione delle responsabilità.
+    </p>
+
+    <hr>
+    <p style="font-size: 1.2em;">💡 <strong>Tutte le challenge sono state completate con successo.</strong></p>
+</body>
+</html>
+
+
 
 
 
