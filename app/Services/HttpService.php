@@ -18,7 +18,29 @@ class HttpService
         $this->client = new Client();
     }
 
-    public function getRequest($url)
+    public function getRequest(string $url)
+{
+    // Verifica ruolo utente
+    $user = auth()->user();
+
+    // Blocca se URL sospetto e utente non è admin
+    if (str_contains($url, 'internal.finance') && (!$user || !$user->is_admin)) {
+        abort(403, 'Accesso non autorizzato a risorsa interna');
+    }
+
+    try {
+        $client = new Client();
+        $response = $client->request('GET', $url);
+        return $response->getBody()->getContents();
+    } catch (\Exception $e) {
+        return json_encode(['error' => 'Richiesta fallita']);
+    }
+}
+
+
+
+
+    /*public function getRequest($url)
     {
         $parsedUrl = parse_url($url);
 
@@ -41,5 +63,5 @@ class HttpService
         } catch (RequestException $e) {
             return 'Something went wrong: ' . $e->getMessage();
         }
-    }
+    }*/
 }
