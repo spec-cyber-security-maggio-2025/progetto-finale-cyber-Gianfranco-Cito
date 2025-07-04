@@ -327,12 +327,12 @@ public function getRequest(string $url)
 <h1 style="color:#2c3e50;">🛡️ CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
 <h2>Autore: Gianfranco Cito</h2>
 
-<h3>1. 🐞 Descrizione dell'attacco</h3>
+<h3>1.  Descrizione dell'attacco</h3>
 <p>
 Durante la creazione di un articolo su <code>/articles/create</code>, è possibile sfruttare strumenti come <strong>BurpSuite</strong> per intercettare e modificare la richiesta POST. In questo modo, un utente malintenzionato può iniettare uno <strong>script XSS (Stored Cross-Site Scripting)</strong> direttamente nel contenuto del campo <code>body</code>, eludendo l’editor visuale.
 </p>
 
-<h4>📦 Payload XSS usati</h4>
+<h4> Payload XSS usati</h4>
 <pre>
 &lt;script&gt;alert('XSS riuscito!')&lt;/script&gt;
 &lt;img src="x" onerror="alert('XSS')"&gt;
@@ -360,7 +360,11 @@ Per prevenire l'inserimento di codice dannoso, è stata implementata una <strong
 </p>
 
 <h4>📌 Codice aggiornato nel controller:</h4>
-![mitigazione 1](https://github.com/user-attachments/assets/389c15f3-5554-4ecc-8579-3e6ea4c20084)
+
+![mitigazione 1](https://github.com/user-attachments/assets/24bbc3ca-9e0b-4700-8223-7b9b389dbfa9)
+
+
+
 
 
 
@@ -378,33 +382,25 @@ Per prevenire l'inserimento di codice dannoso, è stata implementata una <strong
 
 <hr>
 
-<h3>3. ✅ Verifica della mitigazione</h3>
+<h3>3.  Verifica della mitigazione</h3>
 <p>
 Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline come <code>onerror</code> vengono automaticamente rimossi, impedendo l'esecuzione di JavaScript dannoso.
 </p>
 
-<h4>📂 Risultato finale:</h4>
+<h4> Risultato finale:</h4>
 <ul>
   <li>✔️ Nessun alert mostrato</li>
   <li>✔️ Nessun payload salvato nel database</li>
   <li>✔️ Stored XSS mitigato con successo</li>
 </ul>
 
+![Screenshot 2025-07-04 091004](https://github.com/user-attachments/assets/17936c88-3f25-4634-8908-c115c69d49e9)
+
+![Screenshot 2025-07-04 100103](https://github.com/user-attachments/assets/fcc37cad-c27d-41a3-bcb8-697139947aab)
+
+
+
 <p style="margin-top: 30px;"><strong>🎯 Challenge completata con successo.</strong></p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
