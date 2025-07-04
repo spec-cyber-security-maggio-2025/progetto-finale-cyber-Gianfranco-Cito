@@ -169,8 +169,9 @@ Dopo la modifica, se l’attaccante prova a rieseguire la pagina HTML maliziosa,
 
 
 
+
 <h2 style="color:#2c3e50;"> CHALLENGE 3: Logs mancanti per operazioni critiche</h2>
-<p><strong>Autore:</strong> Gianfranco Cito</p>
+
 
 <h3>1. Descrizione del problema</h3>
 <p>
@@ -318,7 +319,9 @@ public function getRequest(string $url)
 
 <hr>
 
-<p style="margin-top: 20px;"><strong>Challenge completata con successo ✅</strong></p>
+
+
+
 
 
 
@@ -396,6 +399,7 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
 
 
 ![Screenshot 2025-07-04 100103](https://github.com/user-attachments/assets/fcc37cad-c27d-41a3-bcb8-697139947aab)
+
 
 
 
