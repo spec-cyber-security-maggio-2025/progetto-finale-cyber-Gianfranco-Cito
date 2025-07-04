@@ -551,14 +551,7 @@ public function update(Request $request)
 
 
 
-# Bonus Zone #
+## Bonus Zone ##
 
 
-
-
-
-
-
-
-
-# progetto-finale-cyber-Gianfranco-Cito
+# progetto-finale-cyber-Gianfranco-Cito #
