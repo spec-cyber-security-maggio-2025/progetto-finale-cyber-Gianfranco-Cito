@@ -62,4 +62,17 @@
             </div>
         </div>
     </div>
+
+   
+    <script src="https://cdn.tiny.cloud/1/zaw2fowrtur5o0tvx8900i3gk5ffqohzx844zi8t5bxirkxz/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+    tinymce.init({
+        selector: '#body',
+        plugins: 'link image code lists',
+        toolbar: 'undo redo | bold italic underline | bullist numlist | link image | code',
+        menubar: false,
+        content_style: "body { font-family:Arial; font-size:14px }"
+    });
+</script>
+
 </x-layout>
