@@ -401,113 +401,88 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
 
 
 
-<p style="margin-top: 30px;"><strong>🎯 Challenge 6 completata con successo.</strong></p>
-
 <section id="challenge-6">
-  <h2>Challenge 6: Integrazione e visualizzazione di dati finanziari</h2>
+  <h2>CHALLENGE 6: Uso non corretto della proprietà <code>fillable</code> nei modelli</h2>
 
-  <h3>Obiettivo</h3>
+  <h3>Scenario</h3>
   <p>
-    Integrare un microservizio esterno che espone dati finanziari (saldo, transazioni, carta di credito)
-    e mostrarli in una vista Blade in Laravel, gestendo errori di connessione, JSON malformato
-    e prevenendo vulnerabilità di mass-assignment.
+    A causa di una scarsa conoscenza del framework, i campi che il modello accetta in mass assignment
+    non sono stati dichiarati correttamente. Tipicamente i dati provengono da form e finiscono
+    direttamente sul modello senza alcun filtro.
   </p>
 
-  <h3>1. Chiamata al microservizio</h3>
+  <h3>Attacco (Mass Assignment)</h3>
+  <p>
+    Un utente malintenzionato può alterare via browser il form aggiungendo campi come
+    <code>is_admin</code>, <code>is_revisor</code> o <code>is_writer</code>, 
+    ottenendo così un’elevazione di privilegi involontaria.
+  </p>
+
+  <h3>Implementazione Vulnerabile</h3>
   <ul>
-    <li>Avvio del server PHP integrato per esporre <code>user-data.php</code> sulla porta 8001.</li>
-    <li>Rimozione dei controlli di <code>HTTP_REFERER</code> e <code>REMOTE_ADDR</code> per evitare
-      <code>403 Forbidden</code> in ambiente di sviluppo.</li>
-    <li>Verifica con:
-      <pre><code>curl -i http://internal.finance:8001/user-data.php</code></pre>
-      fino a ottenere <code>200 OK</code> con payload JSON corretto.
+    <li>Rotte e controller per la pagina di profilo utente permettono di modificare:
+      <ul>
+        <li>nome</li>
+        <li>email</li>
+        <li>password</li>
+      </ul>
     </li>
+    <li>Il modello <code>User</code> inizialmente non dichiara restrizioni, quindi accetta
+      in mass assignment tutti i campi presenti nella request.</li>
   </ul>
 
-  <h3>2. Controller Laravel</h3>
+  <h3>Mitigazione</h3>
+  <p>
+    Utilizzare la proprietà <code>protected $fillable</code> nel modello per elencare
+    solo i campi ammessi dal form. Qualsiasi altro campo inviato tramite request verrà ignorato,
+    prevenendo escalation di privilegi.
+  </p>
+
+  <h4>Esempio di modello <code>User</code> corretto</h4>
   <pre><code class="language-php">
-public function dashboard()
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
+class User extends Authenticatable
 {
-    // Raccolta richieste di ruolo
-    $adminRequests   = User::whereNull('is_admin')->get();
-    $revisorRequests = User::whereNull('is_revisor')->get();
-    $writerRequests  = User::whereNull('is_writer')->get();
+    use Notifiable;
 
-    // Fallback iniziale per evitare chiave indefinita
-    $financialData = ['users' => []];
+    // Solo i campi gestiti dal form di profilo
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
 
-    try {
-        $response = $this->httpService
-                         ->getRequest('http://internal.finance:8001/user-data.php');
-        if (empty($response)) throw new Exception('Empty response');
-        $decoded = json_decode($response, true);
-        if (json_last_error()) throw new Exception(json_last_error_msg());
-
-        // Sovrascrivo solo se è presente users[]
-        if (isset($decoded['users']) && is_array($decoded['users'])) {
-            $financialData = $decoded;
-        } else {
-            Log::warning('Unexpected finance payload', ['data' => $decoded]);
-        }
-    } catch (Exception $e) {
-        Log::error('Finance API error: ' . $e->getMessage());
-    }
-
-    return view('admin.dashboard', compact(
-        'adminRequests',
-        'revisorRequests',
-        'writerRequests',
-        'financialData'
-    ));
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 }
   </code></pre>
 
-  <h3>3. View Blade: difesa e fallback</h3>
-  <pre><code class="language-blade">
-<table class="table">
-  <thead>…</thead>
-  <tbody>
-    @forelse($financialData['users'] ?? [] as $user)
-      <tr>
-        <td>{{ $user['username'] }}</td>
-        <td>{{ $user['account_balance'] }}</td>
-        <td>
-          <ul>
-            @foreach($user['transactions'] as $t)
-              <li>{{ $t['date'] }} – {{ $t['description'] }} ({{ $t['amount'] }})</li>
-            @endforeach
-          </ul>
-        </td>
-        <td>
-          <p>{{ $user['credit_card']['card_number'] }}</p>
-          <p>{{ $user['credit_card']['expiry_date'] }}</p>
-          <p>CVV: {{ $user['credit_card']['cvv'] }}</p>
-        </td>
-      </tr>
-    @empty
-      <tr>
-        <td colspan="4" class="text-center text-muted">
-          Nessun dato finanziario disponibile.
-        </td>
-      </tr>
-    @endforelse
-  </tbody>
-</table>
+  <h4>Uso in controller</h4>
+  <pre><code class="language-php">
+// Nel controller ProfiloController
+public function update(Request $request)
+{
+    $data = $request->validate([
+        'name'     => 'required|string|max:255',
+        'email'    => 'required|email|unique:users,email,' . Auth::id(),
+        'password' => 'nullable|string|min:8|confirmed',
+    ]);
+
+    Auth::user()->update($data);
+
+    return back()->with('message', 'Profilo aggiornato con successo.');
+}
   </code></pre>
-
-  <h3>4. Mitigazione Mass-Assignment</h3>
-  <ul>
-    <li>Definire in ogni modello Eloquent la proprietà <code>protected $fillable</code> con solo i campi
-      provenienti dal form.</li>
-    <li>In <code>User.php</code> rimuovere dai <kbd>fillable</kbd> i flag di ruolo
-      (<code>is_admin</code>, <code>is_revisor</code>, <code>is_writer</code>), gestiti solo via controller.</li>
-    <li>In <code>Category.php</code> e <code>Tag.php</code> dichiarare <kbd>fillable</kbd> su
-      <code>name</code> soltanto.</li>
-  </ul>
-
-  <p><strong>Risultato:</strong> integrazione end-to-end affidabile, sicura e user-friendly
-     per la sezione “Financial Data” dell’area admin.</p>
 </section>
+
 
 
 
