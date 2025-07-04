@@ -231,6 +231,99 @@ facilitando audit trail e analisi post-attacco.
 ![4](https://github.com/user-attachments/assets/91d1b6c6-835b-4181-96bd-725aa867f3a4)
 
 
+<h2 style="color:#2c3e50;">CHALLENGE 4: Manomissione input (SSRF + Misconfigured CORS)</h2>
+<p><strong>Autore:</strong> Gianfranco Cito</p>
+
+<h3>🧪 1. Scenario dell'attacco</h3>
+<p>
+Nella pagina di creazione articolo era presente un componente Livewire <code>&lt;livewire:latest-news /&gt;</code> che suggeriva notizie recenti da NewsAPI. L'utente poteva selezionare la lingua (IT / EN) tramite un menu a tendina che controllava l’URL usato per la richiesta.
+</p>
+
+<p>
+Ispezionando il DOM era possibile modificare il valore <code>&lt;option value="..."&gt;</code> inserendo un URL arbitrario, ad esempio verso un host interno come <code>http://internal.finance:8001/user-data.php</code>.
+</p>
+
+<p>
+Poiché Laravel eseguiva direttamente la fetch del valore selezionato, un utente malintenzionato poteva forzare l’applicazione a effettuare una richiesta HTTP a una risorsa interna: <strong>SSRF (Server-Side Request Forgery)</strong>.
+</p>
+
+<pre><code>
+&lt;option value="http://internal.finance:8001/user-data.php" selected&gt;NewsAPI - IT&lt;/option&gt;
+</code></pre>
+
+<p>
+Con CORS male configurato e senza restrizioni lato server, l'utente otteneva in risposta dati finanziari sensibili.
+</p>
+
+<hr>
+
+<h3>🔧 2. Mitigazione lato Livewire (LatestNews.php)</h3>
+<p>Per evitare la manipolazione dell’HTML lato client, la logica è stata riscritta usando una <strong>whitelist</strong> di URL ammessi. Qualsiasi URL non presente nella lista viene ignorato.</p>
+
+<pre><code>
+public function fetchNews()
+{
+    $allowedApis = [
+        'it' =&gt; 'https://newsapi.org/v2/top-headlines?country=it&amp;apiKey=' . env('NEWS_API_KEY'),
+        'en' =&gt; 'https://newsapi.org/v2/top-headlines?country=us&amp;apiKey=' . env('NEWS_API_KEY'),
+    ];
+
+    if (!isset($allowedApis[$this->selectedApi])) {
+        $this->news = ['error' =&gt; 'API non autorizzata'];
+        return;
+    }
+
+    $url = $allowedApis[$this->selectedApi];
+    $this->news = json_decode($this->httpService-&gt;getRequest($url), true);
+}
+</code></pre>
+
+<p>✅ L’utente può ora selezionare solo API predefinite (IT o EN). Qualunque altro URL viene scartato.</p>
+
+<hr>
+
+<h3>🛡️ 3. Mitigazione lato HttpService (HttpService.php)</h3>
+<p>Per maggiore sicurezza, viene impedito a utenti non admin di effettuare richieste verso indirizzi interni:</p>
+
+<pre><code>
+public function getRequest(string $url)
+{
+    $user = auth()-&gt;user();
+
+    if (str_contains($url, 'internal.finance') &amp;&amp; (!$user || !$user-&gt;is_admin)) {
+        abort(403, 'Accesso non autorizzato a risorsa interna');
+    }
+
+    try {
+        $client = new Client();
+        $response = $client-&gt;request('GET', $url);
+        return $response-&gt;getBody()-&gt;getContents();
+    } catch (\Exception $e) {
+        return json_encode(['error' =&gt; 'Richiesta fallita']);
+    }
+}
+</code></pre>
+
+<p>✅ Anche in caso di bypass HTML, la richiesta verrà bloccata lato server.</p>
+
+<hr>
+
+<h3>🔍 4. Verifica della mitigazione</h3>
+<ul>
+  <li>Modificando l’HTML e forzando un URL esterno → restituisce <code>API non autorizzata</code></li>
+  <li>Se un utente writer prova a raggiungere <code>internal.finance</code> → Laravel mostra <code>403 Forbidden</code></li>
+</ul>
+
+<p>
+✅ Attacco SSRF mitigato con successo sia a livello di interfaccia che di backend.
+</p>
+
+<hr>
+
+<p style="margin-top: 20px;"><strong>Challenge completata con successo ✅</strong></p>
+
+
+
 
 
 
