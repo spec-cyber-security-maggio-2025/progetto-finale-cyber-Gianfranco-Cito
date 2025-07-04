@@ -2,7 +2,10 @@
 
 use App\Models\User;
 
+
 use Illuminate\Support\Facades\Route;
+
+
 
 
 
@@ -11,7 +14,12 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\WriterController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\RevisorController;
+
+
 use App\Http\Middleware\RateLimitByIP;
+use App\Http\Controllers\ProfileController;
+
+
 
 
 
@@ -54,6 +62,10 @@ Route::middleware('revisor')->group(function(){
 
 // Admin routes
 Route::middleware(['admin','admin.local'])->group(function(){
+
+
+
+
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     //Route::get('/admin/{user}/set-admin', [AdminController::class, 'setAdmin'])->name('admin.setAdmin');
     Route::patch('/admin/{user}/set-admin', [AdminController::class, 'setAdmin'])->name('admin.setAdmin');
@@ -70,3 +82,15 @@ Route::middleware(['admin','admin.local'])->group(function(){
     Route::post('/admin/category/store', [AdminController::class, 'storeCategory'])->name('admin.storeCategory');
     Route::post('/admin/tag/store', [AdminController::class, 'storeTag'])->name('admin.storeTag');
 });
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    /*Route::get('/profile/dashboard', [ProfileController::class, 'dashboard'])->name('profile.dashboard');*/
+
+ 
+
+
+});
+

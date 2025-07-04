@@ -17,6 +17,8 @@ class OnlyLocalAdmin
     {
         // Definisci gli host consentiti, in produzione vanno gli IPs reali o i domini
         $allowedHosts = ['internal.admin:8000'];
+        
+        
 
         // Recupera l'host dalla richiesta
         $host = $request->header('Host');

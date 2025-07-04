@@ -18,7 +18,7 @@
                         Hi, {{ Auth::user()->name }}
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><a class="dropdown-item" href="http://cyber.blog:8000/profile">Profile</a></li>
                         @if (Auth::user()->is_admin)
                             <li><a class="dropdown-item" href="{{route('admin.dashboard')}}">Admin panel</a></li>
                         @endif

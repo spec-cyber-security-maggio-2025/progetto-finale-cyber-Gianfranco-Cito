@@ -20,39 +20,57 @@ class AdminController extends Controller
         $this->httpService = $httpService;
     } 
 
-    public function dashboard(){
-        $adminRequests = User::where('is_admin', NULL)->get();
-        $revisorRequests = User::where('is_revisor', NULL)->get();
-        $writerRequests = User::where('is_writer', NULL)->get();
+ public function dashboard()
+{
+    // 1) Collect the pending role‐requests
+    $adminRequests   = User::whereNull('is_admin')->get();
+    $revisorRequests = User::whereNull('is_revisor')->get();
+    $writerRequests  = User::whereNull('is_writer')->get();
 
-        //$financialData = json_decode($this->httpService->getRequest('http://localhost:8001/financialApp/user-data.php'));
-        
-        try {
-            // Effettua la richiesta HTTP
-            $response = $this->httpService->getRequest('http://internal.finance:8001/user-data.php');
-            // Controlla se la risposta è vuota o non valida
-            if (empty($response)) {
-                throw new Exception('La risposta dalla richiesta HTTP è vuota.');
-            }
-           
-            // Decodifica il JSON
-            $financialData = json_decode($response, true);
+    $financialData = json_decode($this->httpService->getRequest('http://localhost:8001/financialApp/user-data.php'));
 
-            // Controlla se ci sono errori nella decodifica del JSON
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception('Errore nella decodifica del JSON: ' . json_last_error_msg());
-            }
-        
-            // A questo punto, $financialData è un array associativo con i dati finanziari
-            // Puoi procedere con l'elaborazione dei dati
-        } catch (Exception $e) {
-            // Gestisci l'eccezione
-            echo 'Errore: ' . $e->getMessage();
-            // Puoi anche registrare l'errore in un log file o eseguire altre azioni di recupero
+    // 2) Always initialize a default shape for the financial data
+    $financialData = ['users' => []];
+
+    try {
+        $response = $this->httpService
+                         ->getRequest('http://internal.finance:8001/user-data.php');
+                         
+                       
+
+        if (empty($response)) {
+            throw new Exception('Empty HTTP response from finance service.');
         }
-        
-        return view('admin.dashboard', compact('adminRequests', 'revisorRequests', 'writerRequests','financialData'));
+
+        $decoded = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('JSON decode error: ' . json_last_error_msg());
+        }
+
+        // Only use it if it actually has a users array
+        if (isset($decoded['users']) && is_array($decoded['users'])) {
+            $financialData = $decoded;
+        } else {
+            Log::warning('Finance API returned unexpected structure', [
+                'payload' => $decoded
+            ]);
+        }
+
+    } catch (Exception $e) {
+        Log::error('Finance API error: ' . $e->getMessage());
+        // optionally: session()->flash('error', 'Could not load financial data.');
     }
+
+    // 3) Pass *all* four variables to the view
+    return view('admin.dashboard', compact(
+        'adminRequests',
+        'revisorRequests',
+        'writerRequests',
+        'financialData'
+    ));
+}
+
+
 
     public function setAdmin(User $user){
     $user->is_admin = true;
