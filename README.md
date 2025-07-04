@@ -394,7 +394,8 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
   <li>✔️ Stored XSS mitigato con successo</li>
 </ul>
 
-![Screenshot 2025-07-04 091004](https://github.com/user-attachments/assets/17936c88-3f25-4634-8908-c115c69d49e9)
+![Screenshot 2025-07-04 100042](https://github.com/user-attachments/assets/967b6e9b-7dbe-4f76-8923-a3e683ff8c99)
+
 
 ![Screenshot 2025-07-04 100103](https://github.com/user-attachments/assets/fcc37cad-c27d-41a3-bcb8-697139947aab)
 
