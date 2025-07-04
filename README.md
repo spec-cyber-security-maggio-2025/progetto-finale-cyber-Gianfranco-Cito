@@ -324,6 +324,77 @@ public function getRequest(string $url)
 
 
 
+<h1 style="color:#2c3e50;">🛡️ CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
+<h2>Autore: Gianfranco Cito</h2>
+
+<h3>1. 🐞 Descrizione dell'attacco</h3>
+<p>
+Durante la creazione di un articolo su <code>/articles/create</code>, è possibile sfruttare strumenti come <strong>BurpSuite</strong> per intercettare e modificare la richiesta POST. In questo modo, un utente malintenzionato può iniettare uno <strong>script XSS (Stored Cross-Site Scripting)</strong> direttamente nel contenuto del campo <code>body</code>, eludendo l’editor visuale.
+</p>
+
+<h4>📦 Payload XSS usati</h4>
+<pre>
+&lt;script&gt;alert('XSS riuscito!')&lt;/script&gt;
+&lt;img src="x" onerror="alert('XSS')"&gt;
+</pre>
+
+<p>
+Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro utente visita la pagina <code>/articles/{id}</code>, dimostrando un attacco XSS persistente.
+</p>
+![hacked](https://github.com/user-attachments/assets/cbb8e97d-62ce-4237-a787-f6eccf85c32e)
+
+
+<h4>📸 Esempio BurpSuite</h4>
+<img src="https://portswigger.net/web-security/images/stored-xss.png" alt="Esempio Burp XSS" width="500">
+
+![burpsuite](https://github.com/user-attachments/assets/1dcbf78a-d4b6-463a-b010-48f6ac701de0)
+![repeater](https://github.com/user-attachments/assets/b5a2e083-03a0-4589-9aab-7881f1e21646)
+
+
+
+<hr>
+
+<h3>2. 🔐 Mitigazione</h3>
+<p>
+Per prevenire l'inserimento di codice dannoso, è stata implementata una <strong>sanificazione lato server</strong> del campo <code>body</code>, tramite <code>strip_tags()</code> con whitelist limitata di tag sicuri.
+</p>
+
+<h4>📌 Codice aggiornato nel controller:</h4>
+![mitigazione 1](https://github.com/user-attachments/assets/389c15f3-5554-4ecc-8579-3e6ea4c20084)
+
+
+
+<pre><code>// Esempio nel metodo store() e update()
+'body' => strip_tags($request->body, '&lt;p&gt;&lt;b&gt;&lt;i&gt;&lt;ul&gt;&lt;li&gt;&lt;a&gt;&lt;strong&gt;&lt;em&gt;'),
+</code></pre>
+
+<p>Inoltre, viene mantenuto il rendering HTML sicuro con il costrutto Laravel <code>{!! ... !!}</code> nella view <code>articles/show.blade.php</code>, solo dopo che i contenuti sono stati sanitizzati:</p>
+
+<pre><code>&lt;p&gt;{!! $article-&gt;body !!}&lt;/p&gt;
+</code></pre>
+![mitigazione 2](https://github.com/user-attachments/assets/f568e520-ddd0-4ec7-b10c-ba833ed99307)
+
+
+
+<hr>
+
+<h3>3. ✅ Verifica della mitigazione</h3>
+<p>
+Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline come <code>onerror</code> vengono automaticamente rimossi, impedendo l'esecuzione di JavaScript dannoso.
+</p>
+
+<h4>📂 Risultato finale:</h4>
+<ul>
+  <li>✔️ Nessun alert mostrato</li>
+  <li>✔️ Nessun payload salvato nel database</li>
+  <li>✔️ Stored XSS mitigato con successo</li>
+</ul>
+
+<p style="margin-top: 30px;"><strong>🎯 Challenge completata con successo.</strong></p>
+
+
+
+
 
 
 
