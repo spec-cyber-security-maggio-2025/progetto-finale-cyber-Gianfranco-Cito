@@ -344,7 +344,7 @@ Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro u
 ![hacked](https://github.com/user-attachments/assets/cbb8e97d-62ce-4237-a787-f6eccf85c32e)
 
 
-<h4>📸 Esempio BurpSuite</h4>
+<h4> Esempio BurpSuite</h4>
 <img src="https://portswigger.net/web-security/images/stored-xss.png" alt="Esempio Burp XSS" width="500">
 
 ![burpsuite](https://github.com/user-attachments/assets/1dcbf78a-d4b6-463a-b010-48f6ac701de0)
@@ -410,6 +410,14 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
     non sono stati dichiarati correttamente. Tipicamente i dati provengono da form e finiscono
     direttamente sul modello senza alcun filtro.
   </p>
+![Screenshot 2025-07-04 153105](https://github.com/user-attachments/assets/95960221-6a29-4c0e-bb49-62452776c269)
+
+Prendiamo come esempio user@aulab.it Steven Manson (User)
+cnel nostro database ha questa situazione:
+
+![Screenshot 2025-07-04 153128](https://github.com/user-attachments/assets/e1232ebc-8b07-45ab-869c-0d8549912229)
+
+  
 
   <h3>Attacco (Mass Assignment)</h3>
   <p>
@@ -431,6 +439,33 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
       in mass assignment tutti i campi presenti nella request.</li>
   </ul>
 
+  ![Screenshot 2025-07-04 153318](https://github.com/user-attachments/assets/e5b58585-8209-4e4b-8c1f-c1fd183b3f14)
+
+  
+
+![Screenshot 2025-07-04 153351](https://github.com/user-attachments/assets/e3a0e6e4-4fd4-4780-8163-9c812bb21cc1)
+
+dopo avere fatto l'upload del profilo abbiamo elevato user@aulab.it nella segente situazione:
+![Screenshot 2025-07-04 153839](https://github.com/user-attachments/assets/ebf563d9-840a-4340-aabf-8c07ac74330c)
+
+Andando fa re il login in http://internal.admin:8000
+
+![Screenshot 2025-07-04 153947](https://github.com/user-attachments/assets/e760c0cb-fefa-4608-ae8e-ccc0a5ed06f3)
+
+![Screenshot 2025-07-04 154037](https://github.com/user-attachments/assets/4a4ecd68-fb84-44c3-a2aa-173ee72c05b0)
+
+
+![Screenshot 2025-07-04 154054](https://github.com/user-attachments/assets/f93d651a-987a-4d30-905a-072fc56a6c2f)
+
+abbiamo elevato di privilegi is_admin,is_revisor,is_writer
+da utente mediocre a superadmin!
+
+quindi puoi carpire modificare cancellare tutti i dati sensibili!!
+
+
+
+
+
   <h3>Mitigazione</h3>
   <p>
     Utilizzare la proprietà <code>protected $fillable</code> nel modello per elencare
@@ -438,7 +473,17 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
     prevenendo escalation di privilegi.
   </p>
 
+  Prima della mitigazione avevavo questa situazione nel modello User.php
+![Screenshot 2025-07-04 154523](https://github.com/user-attachments/assets/32324b3a-b882-492d-b6a4-a4414e5ddba7)
+
+  
+
   <h4>Esempio di modello <code>User</code> corretto</h4>
+
+  ma ecco subito la nostra mitigazione(rif. figura)
+![Screenshot 2025-07-04 154604](https://github.com/user-attachments/assets/107bdf7f-2aa8-4931-a339-0c333cbf494e)
+
+  
   <pre><code class="language-php">
 <?php
 
@@ -482,6 +527,23 @@ public function update(Request $request)
 }
   </code></pre>
 </section>
+
+
+<section id="feedback-mass-assignment">
+  <h2>Feedback Tecnico sull’Attacco di Mass Assignment</h2>
+  <p>
+    L’attacco di <em>mass assignment</em> sfrutta la capacità di Eloquent di popolare automaticamente 
+    tutti gli attributi di un modello da un array di input. Se non si definisce correttamente 
+    <code>protected $fillable</code>, un utente malintenzionato può iniettare campi non previsti 
+    (es. <code>is_admin</code>, <code>is_revisor</code>) direttamente nella request HTTP, 
+    ottenendo un’elevazione di privilegi senza dover compromettere password o autenticazione. 
+    La mitigazione principale consiste nell’adottare una whitelist esplicita dei soli campi ammessi, 
+    combinata con una validazione puntuale in controller. In questo modo, ogni tentativo di assegnare 
+    attributi non dichiarati viene automaticamente ignorato da Eloquent, garantendo che solo i dati 
+    effettivamente previsti dal form possano modificare lo stato del modello.
+  </p>
+</section>
+
 
 
 
