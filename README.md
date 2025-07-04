@@ -83,9 +83,9 @@ L'attacco è quindi mitigato con successo.
 <img src="https://github.com/user-attachments/assets/84a12cef-f4f6-48fe-87ff-d0c8fd41d706" alt="Attacco mitigato" width="600">
 
 
-<h2>🔐 CHALLENGE 2: Operazioni critiche in GET (CSRF Attack)</h2>
+<h2> CHALLENGE 2: Operazioni critiche in GET (CSRF Attack)</h2>
 
-<p><strong>Autore:</strong> Gianfranco Cito</p>
+
 
 <h3>1. Descrizione dell'attacco</h3>
 
@@ -106,7 +106,7 @@ L’attaccante crea una pagina HTML contenente un link nascosto che viene clicca
 Se la vittima è loggata con privilegi di amministrazione, l’azione viene eseguita a sua insaputa.
 </p>
 
-<h4>💣 Codice della pagina HTML dell’attacco:</h4>
+<h4> Codice della pagina HTML dell’attacco:</h4>
 
 <pre>
 &lt;a id="csrf-link" href="http://cyber.blog:8000/admin/2/set-admin" style="display:none;"&gt;Trigger&lt;/a&gt;
@@ -166,12 +166,10 @@ Dopo la modifica, se l’attaccante prova a rieseguire la pagina HTML maliziosa,
 
 <p><strong>Risultato:</strong> attacco CSRF bloccato. L’elevazione dei privilegi da dominio esterno non è più possibile.</p>
 
-<p>
-✅ <strong>Challenge completata con successo.</strong>
-</p>
 
 
-<h2 style="color:#2c3e50;">🔐 CHALLENGE 3: Logs mancanti per operazioni critiche</h2>
+
+<h2 style="color:#2c3e50;"> CHALLENGE 3: Logs mancanti per operazioni critiche</h2>
 <p><strong>Autore:</strong> Gianfranco Cito</p>
 
 <h3>1. Descrizione del problema</h3>
@@ -234,7 +232,7 @@ facilitando audit trail e analisi post-attacco.
 <h2 style="color:#2c3e50;">CHALLENGE 4: Manomissione input (SSRF + Misconfigured CORS)</h2>
 <p><strong>Autore:</strong> Gianfranco Cito</p>
 
-<h3>🧪 1. Scenario dell'attacco</h3>
+<h3> 1. Scenario dell'attacco</h3>
 <p>
 Nella pagina di creazione articolo era presente un componente Livewire <code>&lt;livewire:latest-news /&gt;</code> che suggeriva notizie recenti da NewsAPI. L'utente poteva selezionare la lingua (IT / EN) tramite un menu a tendina che controllava l’URL usato per la richiesta.
 </p>
@@ -282,7 +280,7 @@ public function fetchNews()
 
 <hr>
 
-<h3>🛡️ 3. Mitigazione lato HttpService (HttpService.php)</h3>
+<h3>🛡 3. Mitigazione lato HttpService (HttpService.php)</h3>
 <p>Per maggiore sicurezza, viene impedito a utenti non admin di effettuare richieste verso indirizzi interni:</p>
 
 <pre><code>
@@ -308,7 +306,7 @@ public function getRequest(string $url)
 
 <hr>
 
-<h3>🔍 4. Verifica della mitigazione</h3>
+<h3> 4. Verifica della mitigazione</h3>
 <ul>
   <li>Modificando l’HTML e forzando un URL esterno → restituisce <code>API non autorizzata</code></li>
   <li>Se un utente writer prova a raggiungere <code>internal.finance</code> → Laravel mostra <code>403 Forbidden</code></li>
@@ -325,7 +323,7 @@ public function getRequest(string $url)
 
 
 <h1 style="color:#2c3e50;">🛡️ CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
-<h2>Autore: Gianfranco Cito</h2>
+
 
 <h3>1.  Descrizione dell'attacco</h3>
 <p>
@@ -354,12 +352,12 @@ Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro u
 
 <hr>
 
-<h3>2. 🔐 Mitigazione</h3>
+<h3>2.  Mitigazione</h3>
 <p>
 Per prevenire l'inserimento di codice dannoso, è stata implementata una <strong>sanificazione lato server</strong> del campo <code>body</code>, tramite <code>strip_tags()</code> con whitelist limitata di tag sicuri.
 </p>
 
-<h4>📌 Codice aggiornato nel controller:</h4>
+<h4> Codice aggiornato nel controller:</h4>
 
 ![mitigazione 1](https://github.com/user-attachments/assets/24bbc3ca-9e0b-4700-8223-7b9b389dbfa9)
 
@@ -448,7 +446,7 @@ cnel nostro database ha questa situazione:
 dopo avere fatto l'upload del profilo abbiamo elevato user@aulab.it nella segente situazione:
 ![Screenshot 2025-07-04 153839](https://github.com/user-attachments/assets/ebf563d9-840a-4340-aabf-8c07ac74330c)
 
-Andando fa re il login in http://internal.admin:8000
+Andando fare il login come un vero admin)) in http://internal.admin:8000
 
 ![Screenshot 2025-07-04 153947](https://github.com/user-attachments/assets/e760c0cb-fefa-4608-ae8e-ccc0a5ed06f3)
 
@@ -543,6 +541,11 @@ public function update(Request $request)
     effettivamente previsti dal form possano modificare lo stato del modello.
   </p>
 </section>
+
+
+
+
+# Bonus Zone #
 
 
 
