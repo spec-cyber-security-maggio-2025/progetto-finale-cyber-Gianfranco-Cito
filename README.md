@@ -256,7 +256,7 @@ Con CORS male configurato e senza restrizioni lato server, l'utente otteneva in 
 
 <hr>
 
-<h3>🔧 2. Mitigazione lato Livewire (LatestNews.php)</h3>
+<h3> 2. Mitigazione lato Livewire (LatestNews.php)</h3>
 <p>Per evitare la manipolazione dell’HTML lato client, la logica è stata riscritta usando una <strong>whitelist</strong> di URL ammessi. Qualsiasi URL non presente nella lista viene ignorato.</p>
 
 <pre><code>
@@ -325,7 +325,9 @@ public function getRequest(string $url)
 
 
 
-<h1 style="color:#2c3e50;">🛡️ CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
+
+
+<h1 style="color:#2c3e50;"> CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
 
 
 <h3>1.  Descrizione dell'attacco</h3>
