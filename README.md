@@ -322,7 +322,7 @@ public function getRequest(string $url)
 
 
 
-####################################################################################################################################################################
+
 
 <h1 style="color:#2c3e50;"> CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
 
@@ -427,7 +427,8 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
     non sono stati dichiarati correttamente. Tipicamente i dati provengono da form e finiscono
     direttamente sul modello senza alcun filtro.
   </p>
-![Screenshot 2025-07-04 153105](https://github.com/user-attachments/assets/95960221-6a29-4c0e-bb49-62452776c269)
+  
+![utente](https://github.com/user-attachments/assets/95960221-6a29-4c0e-bb49-62452776c269)
 
 Prendiamo come esempio user@aulab.it Steven Manson (User)
 cnel nostro database ha questa situazione:
