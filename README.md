@@ -277,7 +277,7 @@ public function fetchNews()
 }
 </code></pre>
 
-<p>✅ L’utente può ora selezionare solo API predefinite (IT o EN). Qualunque altro URL viene scartato.</p>
+<p> L’utente può ora selezionare solo API predefinite (IT o EN). Qualunque altro URL viene scartato.</p>
 
 <hr>
 
@@ -303,7 +303,7 @@ public function getRequest(string $url)
 }
 </code></pre>
 
-<p>✅ Anche in caso di bypass HTML, la richiesta verrà bloccata lato server.</p>
+<p> Anche in caso di bypass HTML, la richiesta verrà bloccata lato server.</p>
 
 <hr>
 
@@ -314,37 +314,49 @@ public function getRequest(string $url)
 </ul>
 
 <p>
-✅ Attacco SSRF mitigato con successo sia a livello di interfaccia che di backend.
+ Attacco SSRF mitigato con successo sia a livello di interfaccia che di backend.
 </p>
 
 <hr>
 
 
-<h1 style="color:#2c3e50;">CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
 
-<h3>1. Descrizione dell'attacco</h3>
+
+####################################################################################################################################################################
+
+<h1 style="color:#2c3e50;"> CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
+
+
+<h3>1.  Descrizione dell'attacco</h3>
 <p>
-Durante la creazione di un articolo su <code>/articles/create</code>, un attacker può intercettare la POST con BurpSuite o DevTools e sostituire il body con payload XSS, bypassando l’editor WYSIWYG.
+Durante la creazione di un articolo su <code>/articles/create</code>, è possibile sfruttare strumenti come <strong>BurpSuite</strong> per intercettare e modificare la richiesta POST. In questo modo, un utente malintenzionato può iniettare uno <strong>script XSS (Stored Cross-Site Scripting)</strong> direttamente nel contenuto del campo <code>body</code>, eludendo l’editor visuale.
 </p>
 
-<h4>Payload utilizzati:</h4>
-<pre><code>&lt;script&gt;alert('XSS riuscito!')&lt;/script&gt;
+<h4> Payload XSS usati</h4>
+<pre>
+&lt;script&gt;alert('XSS riuscito!')&lt;/script&gt;
 &lt;img src="x" onerror="alert('XSS')"&gt;
-</code></pre>
+</pre>
 
-<p>Una volta salvato, il payload viene eseguito ogni volta che qualcuno visita <code>/articles/{id}</code>, dimostrando un <strong>Stored XSS</strong> persistente.</p>
-<figure>
-  <img src="https://raw.githubusercontent.com/tuo-username/tuo-repo/main/assets/xss-payload-demo.png" alt="Demo Stored XSS" style="max-width:100%;">
-  <figcaption>Demo: alert XSS eseguito sulla pagina show</figcaption>
-</figure>
+<p>
+Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro utente visita la pagina <code>/articles/{id}</code>, dimostrando un attacco XSS persistente.
+</p>
+![hacked](https://github.com/user-attachments/assets/cbb8e97d-62ce-4237-a787-f6eccf85c32e)
 
-<h4>Esempio di intercettazione in BurpSuite:</h4>
-<figure>
-  <img src="https://raw.githubusercontent.com/tuo-username/tuo-repo/main/assets/burp-repeater.png" alt="Burp Repeater Request" style="max-width:100%;">
-  <figcaption>Modifica del campo <code>body</code> nel Repeater</figcaption>
-</figure>
+
+<h4> Esempio BurpSuite</h4>
+<img src="https://portswigger.net/web-security/images/stored-xss.png" alt="Esempio Burp XSS" width="500">
+
+![burpsuite](https://github.com/user-attachments/assets/1dcbf78a-d4b6-463a-b010-48f6ac701de0)
+![repeater](https://github.com/user-attachments/assets/b5a2e083-03a0-4589-9aab-7881f1e21646)
+
+
+
+
 
 <hr>
+
+
 
 <h3>2. Mitigazione</h3>
 <p>
