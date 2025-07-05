@@ -357,53 +357,50 @@ Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro u
 <hr>
 
 
-
-<h3>2. Mitigazione</h3>
+<h3>2.  Mitigazione</h3>
 <p>
-Per evitare che codici malevoli vengano salvati, ho aggiunto una <strong>sanificazione lato server</strong> nel controller, usando <code>strip_tags()</code> con whitelist di tag consentiti.
+Per prevenire l'inserimento di codice dannoso, è stata implementata una <strong>sanificazione lato server</strong> del campo <code>body</code>, tramite <code>strip_tags()</code> con whitelist limitata di tag sicuri.
 </p>
 
-<figure>
-  <img src="https://raw.githubusercontent.com/tuo-username/tuo-repo/main/assets/mitigazione-controller.png" alt="Codice mitigazione" style="max-width:100%;">
-  <figcaption>Codice PHP aggiornato in <code>ArticleController@store/update</code></figcaption>
-</figure>
+<h4> Codice aggiornato nel controller:</h4>
 
-<pre><code class="language-php">// In store() e update()
-'body' => strip_tags(
-    $request->body,
-    '<p><b><i><ul><li><a><strong><em>'
-),
+![mitigazione 1](https://github.com/user-attachments/assets/24bbc3ca-9e0b-4700-8223-7b9b389dbfa9)
+
+
+
+
+
+
+<pre><code>// Esempio nel metodo store() e update()
+'body' => strip_tags($request->body, '&lt;p&gt;&lt;b&gt;&lt;i&gt;&lt;ul&gt;&lt;li&gt;&lt;a&gt;&lt;strong&gt;&lt;em&gt;'),
 </code></pre>
 
-<p>
-Il rendering in <code>show.blade.php</code> rimane con <code>{!! $article-&gt;body !!}</code>, ma ora riceve solo HTML “pulito”.
-</p>
+<p>Inoltre, viene mantenuto il rendering HTML sicuro con il costrutto Laravel <code>{!! ... !!}</code> nella view <code>articles/show.blade.php</code>, solo dopo che i contenuti sono stati sanitizzati:</p>
 
-<pre><code class="language-blade">&lt;p&gt;{!! $article-&gt;body !!}&lt;/p&gt;
+<pre><code>&lt;p&gt;{!! $article-&gt;body !!}&lt;/p&gt;
 </code></pre>
+![mitigazione 2](https://github.com/user-attachments/assets/f568e520-ddd0-4ec7-b10c-ba833ed99307)
 
-<figure>
-  <img src="https://raw.githubusercontent.com/tuo-username/tuo-repo/main/assets/mitigazione-show.png" alt="Show blade mitigato" style="max-width:100%;">
-  <figcaption>View aggiornata per mostrare il body sanitizzato</figcaption>
-</figure>
+
 
 <hr>
 
-<h3>3. Verifica della mitigazione</h3>
+<h3>3.  Verifica della mitigazione</h3>
 <p>
-Dopo la sanificazione, ogni tentativo di inserire <code>&lt;script&gt;</code> o eventi inline viene rimosso, impedendo l’esecuzione di JavaScript dannoso.
+Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline come <code>onerror</code> vengono automaticamente rimossi, impedendo l'esecuzione di JavaScript dannoso.
 </p>
 
+<h4> Risultato finale:</h4>
 <ul>
   <li>✔️ Nessun alert mostrato</li>
   <li>✔️ Nessun payload salvato nel database</li>
-  <li>✔️ Stored XSS completamente mitigato</li>
+  <li>✔️ Stored XSS mitigato con successo</li>
 </ul>
 
-<figure>
-  <img src="https://github.com/user-attachments/assets/fcc37cad-c27d-41a3-bcb8-697139947aab" alt="Verifica finale mitigazione" style="max-width:100%;">
-  <figcaption>Verifica: body privo di script malevoli</figcaption>
-</figure>
+![Screenshot 2025-07-04 100042](https://github.com/user-attachments/assets/967b6e9b-7dbe-4f76-8923-a3e683ff8c99)
+
+
+![Screenshot 2025-07-04 100103](https://github.com/user-attachments/assets/fcc37cad-c27d-41a3-bcb8-697139947aab)
 
 
 
