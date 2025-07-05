@@ -83,9 +83,9 @@ L'attacco è quindi mitigato con successo.
 <img src="https://github.com/user-attachments/assets/84a12cef-f4f6-48fe-87ff-d0c8fd41d706" alt="Attacco mitigato" width="600">
 
 
-<h2>🔐 CHALLENGE 2: Operazioni critiche in GET (CSRF Attack)</h2>
+<h2> CHALLENGE 2: Operazioni critiche in GET (CSRF Attack)</h2>
 
-<p><strong>Autore:</strong> Gianfranco Cito</p>
+
 
 <h3>1. Descrizione dell'attacco</h3>
 
@@ -106,7 +106,7 @@ L’attaccante crea una pagina HTML contenente un link nascosto che viene clicca
 Se la vittima è loggata con privilegi di amministrazione, l’azione viene eseguita a sua insaputa.
 </p>
 
-<h4>💣 Codice della pagina HTML dell’attacco:</h4>
+<h4> Codice della pagina HTML dell’attacco:</h4>
 
 <pre>
 &lt;a id="csrf-link" href="http://cyber.blog:8000/admin/2/set-admin" style="display:none;"&gt;Trigger&lt;/a&gt;
@@ -166,13 +166,12 @@ Dopo la modifica, se l’attaccante prova a rieseguire la pagina HTML maliziosa,
 
 <p><strong>Risultato:</strong> attacco CSRF bloccato. L’elevazione dei privilegi da dominio esterno non è più possibile.</p>
 
-<p>
-✅ <strong>Challenge completata con successo.</strong>
-</p>
 
 
-<h2 style="color:#2c3e50;">🔐 CHALLENGE 3: Logs mancanti per operazioni critiche</h2>
-<p><strong>Autore:</strong> Gianfranco Cito</p>
+
+
+<h2 style="color:#2c3e50;"> CHALLENGE 3: Logs mancanti per operazioni critiche</h2>
+
 
 <h3>1. Descrizione del problema</h3>
 <p>
@@ -234,7 +233,7 @@ facilitando audit trail e analisi post-attacco.
 <h2 style="color:#2c3e50;">CHALLENGE 4: Manomissione input (SSRF + Misconfigured CORS)</h2>
 <p><strong>Autore:</strong> Gianfranco Cito</p>
 
-<h3>🧪 1. Scenario dell'attacco</h3>
+<h3> 1. Scenario dell'attacco</h3>
 <p>
 Nella pagina di creazione articolo era presente un componente Livewire <code>&lt;livewire:latest-news /&gt;</code> che suggeriva notizie recenti da NewsAPI. L'utente poteva selezionare la lingua (IT / EN) tramite un menu a tendina che controllava l’URL usato per la richiesta.
 </p>
@@ -257,7 +256,7 @@ Con CORS male configurato e senza restrizioni lato server, l'utente otteneva in 
 
 <hr>
 
-<h3>🔧 2. Mitigazione lato Livewire (LatestNews.php)</h3>
+<h3> 2. Mitigazione lato Livewire (LatestNews.php)</h3>
 <p>Per evitare la manipolazione dell’HTML lato client, la logica è stata riscritta usando una <strong>whitelist</strong> di URL ammessi. Qualsiasi URL non presente nella lista viene ignorato.</p>
 
 <pre><code>
@@ -282,7 +281,7 @@ public function fetchNews()
 
 <hr>
 
-<h3>🛡️ 3. Mitigazione lato HttpService (HttpService.php)</h3>
+<h3>🛡 3. Mitigazione lato HttpService (HttpService.php)</h3>
 <p>Per maggiore sicurezza, viene impedito a utenti non admin di effettuare richieste verso indirizzi interni:</p>
 
 <pre><code>
@@ -308,7 +307,7 @@ public function getRequest(string $url)
 
 <hr>
 
-<h3>🔍 4. Verifica della mitigazione</h3>
+<h3> 4. Verifica della mitigazione</h3>
 <ul>
   <li>Modificando l’HTML e forzando un URL esterno → restituisce <code>API non autorizzata</code></li>
   <li>Se un utente writer prova a raggiungere <code>internal.finance</code> → Laravel mostra <code>403 Forbidden</code></li>
@@ -320,12 +319,16 @@ public function getRequest(string $url)
 
 <hr>
 
-<p style="margin-top: 20px;"><strong>Challenge completata con successo ✅</strong></p>
 
 
 
-<h1 style="color:#2c3e50;">🛡️ CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
-<h2>Autore: Gianfranco Cito</h2>
+
+
+
+
+
+<h1 style="color:#2c3e50;"> CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
+
 
 <h3>1.  Descrizione dell'attacco</h3>
 <p>
@@ -344,7 +347,7 @@ Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro u
 ![hacked](https://github.com/user-attachments/assets/cbb8e97d-62ce-4237-a787-f6eccf85c32e)
 
 
-<h4>📸 Esempio BurpSuite</h4>
+<h4> Esempio BurpSuite</h4>
 <img src="https://portswigger.net/web-security/images/stored-xss.png" alt="Esempio Burp XSS" width="500">
 
 ![burpsuite](https://github.com/user-attachments/assets/1dcbf78a-d4b6-463a-b010-48f6ac701de0)
@@ -354,12 +357,12 @@ Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro u
 
 <hr>
 
-<h3>2. 🔐 Mitigazione</h3>
+<h3>2.  Mitigazione</h3>
 <p>
 Per prevenire l'inserimento di codice dannoso, è stata implementata una <strong>sanificazione lato server</strong> del campo <code>body</code>, tramite <code>strip_tags()</code> con whitelist limitata di tag sicuri.
 </p>
 
-<h4>📌 Codice aggiornato nel controller:</h4>
+<h4> Codice aggiornato nel controller:</h4>
 
 ![mitigazione 1](https://github.com/user-attachments/assets/24bbc3ca-9e0b-4700-8223-7b9b389dbfa9)
 
@@ -401,11 +404,154 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
 
 
 
-<p style="margin-top: 30px;"><strong>🎯 Challenge completata con successo.</strong></p>
+
+<section id="challenge-6">
+  <h2>CHALLENGE 6: Uso non corretto della proprietà <code>fillable</code> nei modelli</h2>
+
+  <h3>Scenario</h3>
+  <p>
+    A causa di una scarsa conoscenza del framework, i campi che il modello accetta in mass assignment
+    non sono stati dichiarati correttamente. Tipicamente i dati provengono da form e finiscono
+    direttamente sul modello senza alcun filtro.
+  </p>
+![Screenshot 2025-07-04 153105](https://github.com/user-attachments/assets/95960221-6a29-4c0e-bb49-62452776c269)
+
+Prendiamo come esempio user@aulab.it Steven Manson (User)
+cnel nostro database ha questa situazione:
+
+![Screenshot 2025-07-04 153128](https://github.com/user-attachments/assets/e1232ebc-8b07-45ab-869c-0d8549912229)
+
+  
+
+  <h3>Attacco (Mass Assignment)</h3>
+  <p>
+    Un utente malintenzionato può alterare via browser il form aggiungendo campi come
+    <code>is_admin</code>, <code>is_revisor</code> o <code>is_writer</code>, 
+    ottenendo così un’elevazione di privilegi involontaria.
+  </p>
+
+  <h3>Implementazione Vulnerabile</h3>
+  <ul>
+    <li>Rotte e controller per la pagina di profilo utente permettono di modificare:
+      <ul>
+        <li>nome</li>
+        <li>email</li>
+        <li>password</li>
+      </ul>
+    </li>
+    <li>Il modello <code>User</code> inizialmente non dichiara restrizioni, quindi accetta
+      in mass assignment tutti i campi presenti nella request.</li>
+  </ul>
+
+  ![Screenshot 2025-07-04 153318](https://github.com/user-attachments/assets/e5b58585-8209-4e4b-8c1f-c1fd183b3f14)
+
+  
+
+![Screenshot 2025-07-04 153351](https://github.com/user-attachments/assets/e3a0e6e4-4fd4-4780-8163-9c812bb21cc1)
+
+dopo avere fatto l'upload del profilo abbiamo elevato user@aulab.it nella segente situazione:
+![Screenshot 2025-07-04 153839](https://github.com/user-attachments/assets/ebf563d9-840a-4340-aabf-8c07ac74330c)
+
+Andando fare il login come un vero admin)) in http://internal.admin:8000
+
+![Screenshot 2025-07-04 153947](https://github.com/user-attachments/assets/e760c0cb-fefa-4608-ae8e-ccc0a5ed06f3)
+
+![Screenshot 2025-07-04 154037](https://github.com/user-attachments/assets/4a4ecd68-fb84-44c3-a2aa-173ee72c05b0)
+
+
+![Screenshot 2025-07-04 154054](https://github.com/user-attachments/assets/f93d651a-987a-4d30-905a-072fc56a6c2f)
+
+abbiamo elevato di privilegi is_admin,is_revisor,is_writer
+da utente mediocre a superadmin!
+
+quindi puoi carpire modificare cancellare tutti i dati sensibili!!
 
 
 
 
 
+  <h3>Mitigazione</h3>
+  <p>
+    Utilizzare la proprietà <code>protected $fillable</code> nel modello per elencare
+    solo i campi ammessi dal form. Qualsiasi altro campo inviato tramite request verrà ignorato,
+    prevenendo escalation di privilegi.
+  </p>
 
-# progetto-finale-cyber-Gianfranco-Cito
+  Prima della mitigazione avevavo questa situazione nel modello User.php
+![Screenshot 2025-07-04 154523](https://github.com/user-attachments/assets/32324b3a-b882-492d-b6a4-a4414e5ddba7)
+
+  
+
+  <h4>Esempio di modello <code>User</code> corretto</h4>
+
+  ma ecco subito la nostra mitigazione(rif. figura)
+![Screenshot 2025-07-04 154604](https://github.com/user-attachments/assets/107bdf7f-2aa8-4931-a339-0c333cbf494e)
+
+  
+  <pre><code class="language-php">
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
+class User extends Authenticatable
+{
+    use Notifiable;
+
+    // Solo i campi gestiti dal form di profilo
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+}
+  </code></pre>
+
+  <h4>Uso in controller</h4>
+  <pre><code class="language-php">
+// Nel controller ProfiloController
+public function update(Request $request)
+{
+    $data = $request->validate([
+        'name'     => 'required|string|max:255',
+        'email'    => 'required|email|unique:users,email,' . Auth::id(),
+        'password' => 'nullable|string|min:8|confirmed',
+    ]);
+
+    Auth::user()->update($data);
+
+    return back()->with('message', 'Profilo aggiornato con successo.');
+}
+  </code></pre>
+</section>
+
+
+<section id="feedback-mass-assignment">
+  <h2>Feedback Tecnico sull’Attacco di Mass Assignment</h2>
+  <p>
+    L’attacco di <em>mass assignment</em> sfrutta la capacità di Eloquent di popolare automaticamente 
+    tutti gli attributi di un modello da un array di input. Se non si definisce correttamente 
+    <code>protected $fillable</code>, un utente malintenzionato può iniettare campi non previsti 
+    (es. <code>is_admin</code>, <code>is_revisor</code>) direttamente nella request HTTP, 
+    ottenendo un’elevazione di privilegi senza dover compromettere password o autenticazione. 
+    La mitigazione principale consiste nell’adottare una whitelist esplicita dei soli campi ammessi, 
+    combinata con una validazione puntuale in controller. In questo modo, ogni tentativo di assegnare 
+    attributi non dichiarati viene automaticamente ignorato da Eloquent, garantendo che solo i dati 
+    effettivamente previsti dal form possano modificare lo stato del modello.
+  </p>
+</section>
+
+
+
+
+## Bonus Zone ##
+
+
+# progetto-finale-cyber-Gianfranco-Cito #
