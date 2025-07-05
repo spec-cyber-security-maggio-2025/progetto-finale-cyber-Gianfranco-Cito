@@ -341,6 +341,7 @@ Durante la creazione di un articolo su <code>/articles/create</code>, è possibi
 <p>
 Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro utente visita la pagina <code>/articles/{id}</code>, dimostrando un attacco XSS persistente.
 </p>
+
 ![hacked](https://github.com/user-attachments/assets/cbb8e97d-62ce-4237-a787-f6eccf85c32e)
 
 
