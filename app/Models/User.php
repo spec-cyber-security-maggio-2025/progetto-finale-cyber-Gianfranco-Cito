@@ -22,6 +22,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        /*'is_admin',
+        'is_revisor',
+        'is_writer',*/
         // rimuoviamo is_admin, is_revisor, is_writer
         // perche quei valori vanno impostati solo in controller,
         // non tramite mass-assignment da form
