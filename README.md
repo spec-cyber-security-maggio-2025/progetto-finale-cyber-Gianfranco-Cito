@@ -554,7 +554,7 @@ public function update(Request $request)
 ## Bonus Zone ##
 
 
-<h2> BONUS 1: Rate Limiting su Login</h2>
+<h2>BONUS 1: Rate Limiting su Login</h2>
 
 <p>Per migliorare la sicurezza dell'applicazione, è stato implementato un <strong>rate limiter</strong> sulla funzionalità di login gestita da <code>Laravel Fortify</code>. Questo meccanismo è fondamentale per mitigare attacchi di tipo <em>brute-force</em> o <em>credential stuffing</em>.</p>
 
@@ -563,18 +563,39 @@ public function update(Request $request)
 
 
 
-<h3> Implementazione</h3>
+<h3>⚙ Implementazione</h3>
 <ul>
-  <li>Laravel Fortify include un sistema di throttling già pronto tramite la <code>LoginRateLimiter</code>.</li>
-  <li>Non è stata necessaria alcuna configurazione custom: Fortify applica il limite di default a <strong>5 tentativi</strong> in 1 minuto per ogni IP e username.</li>
-  <li>È stato sufficiente testare la protezione tentando più di 5 login falliti consecutivi con credenziali errate.</li>
+  <li>Laravel Fortify include un sistema di throttling già integrato tramite la classe <code>LoginRateLimiter</code>.</li>
+  <li>Nel file <code>App\Providers\FortifyServiceProvider.php</code>, all'interno del metodo <code>boot()</code>, ho aggiunto la seguente configurazione personalizzata:</li>
 </ul>
 
-<h3> Risultato</h3>
-![Screenshot 2025-07-05 105843](https://github.com/user-attachments/assets/7f4a23b0-69ff-4f42-a90f-304c17d2c74d)
+<pre><code class="language-php">use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Request;
 
+RateLimiter::for('login', function (Request $request) {
+    $email = (string) $request->email;
+    return Limit::perMinute(5)->by($email . $request->ip());
+});
+</code></pre>
+
+<ul>
+  <li> Questo impone un limite di <strong>5 tentativi al minuto</strong> per ogni combinazione <code>email + IP</code>, mitigando attacchi brute-force.</li>
+  <li>Non è stata necessaria alcuna modifica nelle rotte o nei controller, Fortify applica automaticamente la regola <code>login</code> sulla route POST <code>/login</code>.</li>
+  <li> Il sistema è stato testato effettuando 6 tentativi falliti consecutivi: al sesto tentativo, il server ha correttamente risposto con <code>HTTP 429 - Too Many Requests</code>.</li>
+</ul>
+
+
+
+
+<h3> Risultato</h3>
+
+
+![Screenshot 2025-07-05 105843](https://github.com/user-attachments/assets/5f491317-17a6-4359-b039-79a67fd1121a)
 
 <p>Dopo il sesto tentativo fallito, il server ha risposto con errore <code>429 Too Many Requests</code>, confermando che il <strong>rate limiter è attivo e funzionante</strong>.</p>
+
+
 
 <h3> File coinvolti</h3>
 <ul>
@@ -582,7 +603,7 @@ public function update(Request $request)
   <li>Eventuali personalizzazioni possono essere fatte nel file <code>FortifyServiceProvider.php</code> o creando un rate limiter personalizzato nel file <code>RouteServiceProvider</code>.</li>
 </ul>
 
-<h3>💡 Note</h3>
+<h3> Note</h3>
 <p>Attualmente il messaggio di errore mostrato al superamento dei tentativi non è stato personalizzato, ma può essere configurato modificando i file di lingua in <code>resources/lang/en/auth.php</code> o <code>validation.php</code>.</p>
 
 
