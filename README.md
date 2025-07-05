@@ -324,32 +324,30 @@ public function getRequest(string $url)
 
 ####################################################################################################################################################################
 
-<h1 style="color:#2c3e50;">CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
+<h1 style="color:#2c3e50;"> CHALLENGE 5: Validazione contenuto articolo non corretta</h1>
 
-<h2>1. Descrizione dell'attacco</h2>
+
+<h3>1.  Descrizione dell'attacco</h3>
 <p>
-  Sulla rotta <code>/articles/create</code>, un attacker può intercettare la richiesta POST (ad esempio con <strong>BurpSuite</strong>) e sostituire il campo <code>body</code> con payload malevoli. Questo consente di eseguire uno <strong>Stored XSS</strong> bypassando completamente l’editor WYSIWYG.
+Durante la creazione di un articolo su <code>/articles/create</code>, è possibile sfruttare strumenti come <strong>BurpSuite</strong> per intercettare e modificare la richiesta POST. In questo modo, un utente malintenzionato può iniettare uno <strong>script XSS (Stored Cross-Site Scripting)</strong> direttamente nel contenuto del campo <code>body</code>, eludendo l’editor visuale.
 </p>
 
-<h3>Payload XSS utilizzati</h3>
-<pre><code>&lt;script&gt;alert('XSS riuscito!')&lt;/script&gt;
+<h4> Payload XSS usati</h4>
+<pre>
+&lt;script&gt;alert('XSS riuscito!')&lt;/script&gt;
 &lt;img src="x" onerror="alert('XSS')"&gt;
-</code></pre>
+</pre>
 
 <p>
-  Una volta salvato l’articolo, il codice iniettato viene eseguito ogni volta che un utente visita <code>/articles/{id}</code>, dimostrando una vulnerabilità di tipo Stored XSS.
+Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro utente visita la pagina <code>/articles/{id}</code>, dimostrando un attacco XSS persistente.
 </p>
+![hacked](https://github.com/user-attachments/assets/cbb8e97d-62ce-4237-a787-f6eccf85c32e)
 
-<figure>
-  <img src="https://raw.githubusercontent.com/tuo-username/tuo-repo/main/assets/xss-demo.png" alt="Demo Stored XSS" style="max-width:100%;">
-  <figcaption>Alert XSS eseguito sulla pagina show</figcaption>
-</figure>
 
-<h3>Esempio di intercettazione in BurpSuite</h3>
-<figure>
-  <img src="https://raw.githubusercontent.com/tuo-username/tuo-repo/main/assets/burp-repeater.png" alt="Intercettazione BurpSuite" style="max-width:100%;">
-  <figcaption>Modifica del campo <code>body</code> nel Repeater di BurpSuite</figcaption>
-</figure>
+
+
+![burpsuite](https://github.com/user-attachments/assets/1dcbf78a-d4b6-463a-b010-48f6ac701de0)
+![repeater](https://github.com/user-attachments/assets/b5a2e083-03a0-4589-9aab-7881f1e21646)
 
 
 
