@@ -277,7 +277,7 @@ public function fetchNews()
 }
 </code></pre>
 
-<p>✅ L’utente può ora selezionare solo API predefinite (IT o EN). Qualunque altro URL viene scartato.</p>
+<p> L’utente può ora selezionare solo API predefinite (IT o EN). Qualunque altro URL viene scartato.</p>
 
 <hr>
 
@@ -303,7 +303,7 @@ public function getRequest(string $url)
 }
 </code></pre>
 
-<p>✅ Anche in caso di bypass HTML, la richiesta verrà bloccata lato server.</p>
+<p> Anche in caso di bypass HTML, la richiesta verrà bloccata lato server.</p>
 
 <hr>
 
@@ -314,13 +314,10 @@ public function getRequest(string $url)
 </ul>
 
 <p>
-✅ Attacco SSRF mitigato con successo sia a livello di interfaccia che di backend.
+ Attacco SSRF mitigato con successo sia a livello di interfaccia che di backend.
 </p>
 
 <hr>
-
-
-
 
 
 
@@ -344,18 +341,21 @@ Durante la creazione di un articolo su <code>/articles/create</code>, è possibi
 <p>
 Una volta salvato l'articolo, lo script viene eseguito ogni volta che un altro utente visita la pagina <code>/articles/{id}</code>, dimostrando un attacco XSS persistente.
 </p>
+
 ![hacked](https://github.com/user-attachments/assets/cbb8e97d-62ce-4237-a787-f6eccf85c32e)
 
 
-<h4> Esempio BurpSuite</h4>
-<img src="https://portswigger.net/web-security/images/stored-xss.png" alt="Esempio Burp XSS" width="500">
+
 
 ![burpsuite](https://github.com/user-attachments/assets/1dcbf78a-d4b6-463a-b010-48f6ac701de0)
 ![repeater](https://github.com/user-attachments/assets/b5a2e083-03a0-4589-9aab-7881f1e21646)
 
 
 
+
+
 <hr>
+
 
 <h3>2.  Mitigazione</h3>
 <p>
@@ -405,6 +405,19 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 <section id="challenge-6">
   <h2>CHALLENGE 6: Uso non corretto della proprietà <code>fillable</code> nei modelli</h2>
 
@@ -414,7 +427,8 @@ Dopo la mitigazione, eventuali tag <code>&lt;script&gt;</code> o eventi inline c
     non sono stati dichiarati correttamente. Tipicamente i dati provengono da form e finiscono
     direttamente sul modello senza alcun filtro.
   </p>
-![Screenshot 2025-07-04 153105](https://github.com/user-attachments/assets/95960221-6a29-4c0e-bb49-62452776c269)
+  
+![utente](https://github.com/user-attachments/assets/95960221-6a29-4c0e-bb49-62452776c269)
 
 Prendiamo come esempio user@aulab.it Steven Manson (User)
 cnel nostro database ha questa situazione:
@@ -552,6 +566,299 @@ public function update(Request $request)
 
 
 ## Bonus Zone ##
+
+
+<h2>BONUS 1: Rate Limiting su Login</h2>
+
+<p>Per migliorare la sicurezza dell'applicazione, è stato implementato un <strong>rate limiter</strong> sulla funzionalità di login gestita da <code>Laravel Fortify</code>. Questo meccanismo è fondamentale per mitigare attacchi di tipo <em>brute-force</em> o <em>credential stuffing</em>.</p>
+
+![Screenshot 2025-07-05 105918](https://github.com/user-attachments/assets/71491f6c-4dc3-421b-9c70-d97cc6ad8974)
+
+
+
+
+<h3>⚙ Implementazione</h3>
+<ul>
+  <li>Laravel Fortify include un sistema di throttling già integrato tramite la classe <code>LoginRateLimiter</code>.</li>
+  <li>Nel file <code>App\Providers\FortifyServiceProvider.php</code>, all'interno del metodo <code>boot()</code>, ho aggiunto la seguente configurazione personalizzata:</li>
+</ul>
+
+<pre><code class="language-php">use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Request;
+
+RateLimiter::for('login', function (Request $request) {
+    $email = (string) $request->email;
+    return Limit::perMinute(5)->by($email . $request->ip());
+});
+</code></pre>
+
+<ul>
+  <li> Questo impone un limite di <strong>5 tentativi al minuto</strong> per ogni combinazione <code>email + IP</code>, mitigando attacchi brute-force.</li>
+  <li>Non è stata necessaria alcuna modifica nelle rotte o nei controller, Fortify applica automaticamente la regola <code>login</code> sulla route POST <code>/login</code>.</li>
+  <li> Il sistema è stato testato effettuando 6 tentativi falliti consecutivi: al sesto tentativo, il server ha correttamente risposto con <code>HTTP 429 - Too Many Requests</code>.</li>
+</ul>
+
+
+
+
+<h3> Risultato</h3>
+
+
+![Screenshot 2025-07-05 105843](https://github.com/user-attachments/assets/5f491317-17a6-4359-b039-79a67fd1121a)
+
+<p>Dopo il sesto tentativo fallito, il server ha risposto con errore <code>429 Too Many Requests</code>, confermando che il <strong>rate limiter è attivo e funzionante</strong>.</p>
+
+
+
+<h3> File coinvolti</h3>
+<ul>
+  <li>Nessuna modifica necessaria nei file <code>routes/web.php</code> o <code>LoginController</code>, poiché Fortify gestisce internamente il throttling.</li>
+  <li>Eventuali personalizzazioni possono essere fatte nel file <code>FortifyServiceProvider.php</code> o creando un rate limiter personalizzato nel file <code>RouteServiceProvider</code>.</li>
+</ul>
+
+<h3> Note</h3>
+<p>Attualmente il messaggio di errore mostrato al superamento dei tentativi non è stato personalizzato, ma può essere configurato modificando i file di lingua in <code>resources/lang/en/auth.php</code> o <code>validation.php</code>.</p>
+
+
+
+<h2>BONUS 4: Risultati della scansione OWASP ZAP</h2>
+
+<!-- OWASP ZAP Scan Results -->
+<h2>📊 Risultati della scansione OWASP ZAP</h2>
+<details>
+  <summary>Mostra i dettagli della scansione</summary>
+  <p>Questi sono i principali alert rilevati da OWASP ZAP sulla tua applicazione Laravel in locale:</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:4px;">Vulnerabilità</th>
+        <th style="text-align:center; padding:4px;">Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:4px;">Content Security Policy (CSP) Header Not Set</td>
+        <td style="text-align:center; padding:4px;">12</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Missing Anti-clickjacking Header</td>
+        <td style="text-align:center; padding:4px;">11</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Big Redirect Detected (Potential Sensitive Information Leak)</td>
+        <td style="text-align:center; padding:4px;">4</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Cookie No HttpOnly Flag</td>
+        <td style="text-align:center; padding:4px;">15</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Cross-Domain JavaScript Source File Inclusion</td>
+        <td style="text-align:center; padding:4px;">33</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Server Leaks Information via “X-Powered-By” Header</td>
+        <td style="text-align:center; padding:4px;">16</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">X-Content-Type-Options Header Missing</td>
+        <td style="text-align:center; padding:4px;">15</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Authentication Request Identified</td>
+        <td style="text-align:center; padding:4px;">–</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Modern Web Application Detected</td>
+        <td style="text-align:center; padding:4px;">11</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Session Management Response Identified</td>
+        <td style="text-align:center; padding:4px;">15</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Per maggiori dettagli, ecco alcuni snapshot della scansione:</p>
+
+  
+![Screenshot 2025-07-08 114816](https://github.com/user-attachments/assets/74bf5e51-02f1-4ce3-b3fa-d4d1a3318061)
+
+
+
+  
+  ![Screenshot 2025-07-08 114844](https://github.com/user-attachments/assets/08c4bfc7-ce8f-4f58-9afd-fc624f766137)
+
+  
+
+  ![Screenshot 2025-07-08 114915](https://github.com/user-attachments/assets/46530429-629d-4229-bd7e-69d0c45fe683)
+
+
+  
+![Screenshot 2025-07-08 115545](https://github.com/user-attachments/assets/fe13afeb-f7e9-4874-821a-95a97b39d476)
+
+
+</details>
+<!-- End OWASP ZAP Scan Results -->
+
+<!-- OWASP ZAP Fixes and Risks -->
+<h2>🛠️ Correzione degli avvisi OWASP ZAP e rischi associati</h2>
+<details>
+  <summary>Mostra come risolvere ogni avviso e cosa succede se non lo fai</summary>
+
+  <!-- CSP -->
+  <h3>1. Content Security Policy (CSP) Header Not Set</h3>
+  <p>
+    <strong>Risoluzione:</strong> aggiungi nel middleware `SecurityHeaders`:
+  </p>
+  <pre><code class="language-php">
+// app/Http/Middleware/SecurityHeaders.php
+$response->headers->set(
+  'Content-Security-Policy',
+  "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+);
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> vulnerabilità XSS – un attacker potrebbe iniettare script maligni.
+  </p>
+
+  <!-- Anti-clickjacking -->
+  <h3>2. Missing Anti-clickjacking Header</h3>
+  <p>
+    <strong>Risoluzione:</strong> nel medesimo middleware, aggiungi:
+  </p>
+  <pre><code class="language-php">
+$response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> attacchi di clickjacking, l’utente potrebbe cliccare su elementi nascosti da un frame malevolo.
+  </p>
+
+  <!-- Big Redirect -->
+  <h3>3. Big Redirect Detected</h3>
+  <p>
+    <strong>Risoluzione:</strong> normalizza subito in un solo redirect HTTPS+www in un Service Provider o middleware:
+  </p>
+  <pre><code class="language-php">
+// in AppServiceProvider@boot()
+if (!$request->secure() || $request->getHost() !== 'www.tuo-dominio.it') {
+  return redirect()->secure('https://www.tuo-dominio.it'.$request->getRequestUri());
+}
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> esposizione di URL interni e parametri sensibili, può facilitare phishing o leakage.
+  </p>
+
+  <!-- HttpOnly Flag -->
+  <h3>4. Cookie No HttpOnly Flag</h3>
+  <p>
+    <strong>Risoluzione:</strong> in <code>config/session.php</code>:
+  </p>
+  <pre><code class="language-php">
+'http_only' => true,
+  </code></pre>
+  <p>
+    Oppure per cookie custom:
+  <pre><code class="language-php">
+return response('…')
+  ->cookie('nome', 'valore', 60, '/', null, true /* secure */, true /* httpOnly */);
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> script XSS possono leggere/strafare i cookie di sessione, rubando credenziali.
+  </p>
+
+  <!-- Cross-Domain JS -->
+  <h3>5. Cross-Domain JavaScript Source File Inclusion</h3>
+  <p>
+    <strong>Risoluzione:</strong> usa solo CDN affidabili e dichiara i domini in CSP:
+  </p>
+  <pre><code class="language-php">
+// nel CSP header:
+script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> un server esterno compromesso può erogare JS dannoso.
+  </p>
+
+  <!-- X-Powered-By -->
+  <h3>6. Server Leaks “X-Powered-By” Header</h3>
+  <p>
+    <strong>Risoluzione:</strong> in <code>php.ini</code>:
+  </p>
+  <pre><code>
+expose_php = Off
+  </code></pre>
+  <p>
+    E/o in Apache <code>.htaccess</code>:
+  </p>
+  <pre><code>
+Header unset X-Powered-By
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> fornisci agli attacker info sulla tecnologia usata (PHP, Laravel), agevolando exploit mirati.
+  </p>
+
+  <!-- X-Content-Type-Options -->
+  <h3>7. X-Content-Type-Options Header Missing</h3>
+  <p>
+    <strong>Risoluzione:</strong> nel middleware:
+  </p>
+  <pre><code class="language-php">
+$response->headers->set('X-Content-Type-Options', 'nosniff');
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> il browser potrebbe “sniffare” il MIME type e interpretare contenuti malevoli come sicuri.
+  </p>
+
+  <!-- Auth Request -->
+  <h3>8. Authentication Request Identified</h3>
+  <p>
+    <strong>Risoluzione:</strong> assicurati che il form di login:
+    <ul>
+      <li>Usi sempre HTTPS</li>
+      <li>Invii via POST</li>
+      <li>Abbiano rate-limiting (middleware <code>throttle:10,1</code>)</li>
+    </ul>
+  </p>
+  <p>
+    <strong>Rischio se non corretto:</strong> attacchi brute-force, intercettazione credenziali in chiaro.
+  </p>
+
+  <!-- Modern Web App -->
+  <h3>9. Modern Web Application Detected</h3>
+  <p>
+    <strong>Risoluzione:</strong> proteggi le API con:
+    <ul>
+      <li>JWT/Token Bearer (<code>Authorization</code> header)</li>
+      <li>CORS e CSRF configurati correttamente</li>
+    </ul>
+  </p>
+  <p>
+    <strong>Rischio se non corretto:</strong> furto di token, accesso non autorizzato alle API.
+  </p>
+
+  <!-- Session Management -->
+  <h3>10. Session Management Response Identified</h3>
+  <p>
+    <strong>Risoluzione:</strong> in <code>config/session.php</code> imposta:
+  </p>
+  <pre><code class="language-php">
+'secure'    => env('SESSION_SECURE_COOKIE', true),
+'http_only' => true,
+'same_site' => 'lax',
+'driver'    => 'cookie',
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> session hijacking, CSRF, manipolazione cookie.
+  </p>
+
+</details>
+<!-- End OWASP ZAP Fixes and Risks -->
+
+
+
+
 
 
 # progetto-finale-cyber-Gianfranco-Cito #
