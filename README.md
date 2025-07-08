@@ -702,6 +702,160 @@ RateLimiter::for('login', function (Request $request) {
 </details>
 <!-- End OWASP ZAP Scan Results -->
 
+<!-- OWASP ZAP Fixes and Risks -->
+<h2>🛠️ Correzione degli avvisi OWASP ZAP e rischi associati</h2>
+<details>
+  <summary>Mostra come risolvere ogni avviso e cosa succede se non lo fai</summary>
+
+  <!-- CSP -->
+  <h3>1. Content Security Policy (CSP) Header Not Set</h3>
+  <p>
+    <strong>Risoluzione:</strong> aggiungi nel middleware `SecurityHeaders`:
+  </p>
+  <pre><code class="language-php">
+// app/Http/Middleware/SecurityHeaders.php
+$response->headers->set(
+  'Content-Security-Policy',
+  "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+);
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> vulnerabilità XSS – un attacker potrebbe iniettare script maligni.
+  </p>
+
+  <!-- Anti-clickjacking -->
+  <h3>2. Missing Anti-clickjacking Header</h3>
+  <p>
+    <strong>Risoluzione:</strong> nel medesimo middleware, aggiungi:
+  </p>
+  <pre><code class="language-php">
+$response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> attacchi di clickjacking, l’utente potrebbe cliccare su elementi nascosti da un frame malevolo.
+  </p>
+
+  <!-- Big Redirect -->
+  <h3>3. Big Redirect Detected</h3>
+  <p>
+    <strong>Risoluzione:</strong> normalizza subito in un solo redirect HTTPS+www in un Service Provider o middleware:
+  </p>
+  <pre><code class="language-php">
+// in AppServiceProvider@boot()
+if (!$request->secure() || $request->getHost() !== 'www.tuo-dominio.it') {
+  return redirect()->secure('https://www.tuo-dominio.it'.$request->getRequestUri());
+}
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> esposizione di URL interni e parametri sensibili, può facilitare phishing o leakage.
+  </p>
+
+  <!-- HttpOnly Flag -->
+  <h3>4. Cookie No HttpOnly Flag</h3>
+  <p>
+    <strong>Risoluzione:</strong> in <code>config/session.php</code>:
+  </p>
+  <pre><code class="language-php">
+'http_only' => true,
+  </code></pre>
+  <p>
+    Oppure per cookie custom:
+  <pre><code class="language-php">
+return response('…')
+  ->cookie('nome', 'valore', 60, '/', null, true /* secure */, true /* httpOnly */);
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> script XSS possono leggere/strafare i cookie di sessione, rubando credenziali.
+  </p>
+
+  <!-- Cross-Domain JS -->
+  <h3>5. Cross-Domain JavaScript Source File Inclusion</h3>
+  <p>
+    <strong>Risoluzione:</strong> usa solo CDN affidabili e dichiara i domini in CSP:
+  </p>
+  <pre><code class="language-php">
+// nel CSP header:
+script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> un server esterno compromesso può erogare JS dannoso.
+  </p>
+
+  <!-- X-Powered-By -->
+  <h3>6. Server Leaks “X-Powered-By” Header</h3>
+  <p>
+    <strong>Risoluzione:</strong> in <code>php.ini</code>:
+  </p>
+  <pre><code>
+expose_php = Off
+  </code></pre>
+  <p>
+    E/o in Apache <code>.htaccess</code>:
+  </p>
+  <pre><code>
+Header unset X-Powered-By
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> fornisci agli attacker info sulla tecnologia usata (PHP, Laravel), agevolando exploit mirati.
+  </p>
+
+  <!-- X-Content-Type-Options -->
+  <h3>7. X-Content-Type-Options Header Missing</h3>
+  <p>
+    <strong>Risoluzione:</strong> nel middleware:
+  </p>
+  <pre><code class="language-php">
+$response->headers->set('X-Content-Type-Options', 'nosniff');
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> il browser potrebbe “sniffare” il MIME type e interpretare contenuti malevoli come sicuri.
+  </p>
+
+  <!-- Auth Request -->
+  <h3>8. Authentication Request Identified</h3>
+  <p>
+    <strong>Risoluzione:</strong> assicurati che il form di login:
+    <ul>
+      <li>Usi sempre HTTPS</li>
+      <li>Invii via POST</li>
+      <li>Abbiano rate-limiting (middleware <code>throttle:10,1</code>)</li>
+    </ul>
+  </p>
+  <p>
+    <strong>Rischio se non corretto:</strong> attacchi brute-force, intercettazione credenziali in chiaro.
+  </p>
+
+  <!-- Modern Web App -->
+  <h3>9. Modern Web Application Detected</h3>
+  <p>
+    <strong>Risoluzione:</strong> proteggi le API con:
+    <ul>
+      <li>JWT/Token Bearer (<code>Authorization</code> header)</li>
+      <li>CORS e CSRF configurati correttamente</li>
+    </ul>
+  </p>
+  <p>
+    <strong>Rischio se non corretto:</strong> furto di token, accesso non autorizzato alle API.
+  </p>
+
+  <!-- Session Management -->
+  <h3>10. Session Management Response Identified</h3>
+  <p>
+    <strong>Risoluzione:</strong> in <code>config/session.php</code> imposta:
+  </p>
+  <pre><code class="language-php">
+'secure'    => env('SESSION_SECURE_COOKIE', true),
+'http_only' => true,
+'same_site' => 'lax',
+'driver'    => 'cookie',
+  </code></pre>
+  <p>
+    <strong>Rischio se non corretto:</strong> session hijacking, CSRF, manipolazione cookie.
+  </p>
+
+</details>
+<!-- End OWASP ZAP Fixes and Risks -->
+
 
 
 
