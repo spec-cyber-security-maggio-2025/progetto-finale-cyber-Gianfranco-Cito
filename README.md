@@ -622,6 +622,89 @@ RateLimiter::for('login', function (Request $request) {
 
 
 
+<h2>BONUS 4: Risultati della scansione OWASP ZAP</h2>
+
+<!-- OWASP ZAP Scan Results -->
+<h2>📊 Risultati della scansione OWASP ZAP</h2>
+<details>
+  <summary>Mostra i dettagli della scansione</summary>
+  <p>Questi sono i principali alert rilevati da OWASP ZAP sulla tua applicazione Laravel in locale:</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:4px;">Vulnerabilità</th>
+        <th style="text-align:center; padding:4px;">Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:4px;">Content Security Policy (CSP) Header Not Set</td>
+        <td style="text-align:center; padding:4px;">12</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Missing Anti-clickjacking Header</td>
+        <td style="text-align:center; padding:4px;">11</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Big Redirect Detected (Potential Sensitive Information Leak)</td>
+        <td style="text-align:center; padding:4px;">4</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Cookie No HttpOnly Flag</td>
+        <td style="text-align:center; padding:4px;">15</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Cross-Domain JavaScript Source File Inclusion</td>
+        <td style="text-align:center; padding:4px;">33</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Server Leaks Information via “X-Powered-By” Header</td>
+        <td style="text-align:center; padding:4px;">16</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">X-Content-Type-Options Header Missing</td>
+        <td style="text-align:center; padding:4px;">15</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Authentication Request Identified</td>
+        <td style="text-align:center; padding:4px;">–</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Modern Web Application Detected</td>
+        <td style="text-align:center; padding:4px;">11</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;">Session Management Response Identified</td>
+        <td style="text-align:center; padding:4px;">15</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Per maggiori dettagli, ecco alcuni snapshot della scansione:</p>
+
+  
+![Screenshot 2025-07-08 114816](https://github.com/user-attachments/assets/74bf5e51-02f1-4ce3-b3fa-d4d1a3318061)
+
+
+
+  
+  ![Screenshot 2025-07-08 114844](https://github.com/user-attachments/assets/08c4bfc7-ce8f-4f58-9afd-fc624f766137)
+
+  
+
+  ![Screenshot 2025-07-08 114915](https://github.com/user-attachments/assets/46530429-629d-4229-bd7e-69d0c45fe683)
+
+
+  
+![Screenshot 2025-07-08 115545](https://github.com/user-attachments/assets/fe13afeb-f7e9-4874-821a-95a97b39d476)
+
+
+</details>
+<!-- End OWASP ZAP Scan Results -->
+
+
+
+
 
 
 # progetto-finale-cyber-Gianfranco-Cito #
