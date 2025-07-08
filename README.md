@@ -621,6 +621,70 @@ RateLimiter::for('login', function (Request $request) {
 <p>Attualmente il messaggio di errore mostrato al superamento dei tentativi non è stato personalizzato, ma può essere configurato modificando i file di lingua in <code>resources/lang/en/auth.php</code> o <code>validation.php</code>.</p>
 
 
+<h2>🔐 BONUS 2: Esempio di Clickjacking</h2>
+
+<h3>1. Descrizione dell’attacco</h3>
+<p>
+Clickjacking (o “UI redress attack”) è una tecnica con cui un malintenzionato
+sovrappone un elemento invisibile (<code>&lt;iframe&gt;</code> o <code>&lt;a&gt;</code>)
+su una pagina ingannevole, facendo sì che l’utente clicchi inconsapevolmente
+una risorsa protetta (ad es. la form di login). In questo modo si possono
+dirottare click e raccogliere credenziali o fargli compiere azioni non volute.
+</p>
+
+<h3>2. Implementazione nel progetto</h3>
+<p>
+Nella demo ho aggiunto, sopra la mia pagina di login, un overlay trasparente
+che punta al “fake-login” cattura-credenziali. L’utente vede soltanto il
+pulsante “🎁 Claim Your Free Gift!”, ma in realtà clicca sull’overlay e viene
+reindirizzato al mio endpoint <code>/attack/fake-login</code>.
+</p>
+
+![Screenshot 2025-07-08 165849](https://github.com/user-attachments/assets/d6a52e30-252d-40b5-a6d2-66c15884041a)
+
+
+<pre><code class="language-html">&lt;div class="clickjack-container"&gt;
+  &lt;button class="cta-button"&gt;🎁 Claim Your Free Gift!&lt;/button&gt;
+  &lt;a href="http://cyber.blog:8000/attack/fake-login"
+     class="clickjack-overlay"&gt;&lt;/a&gt;
+&lt;/div&gt;</code></pre>
+
+<h3>3. Tipologia di attacco</h3>
+<ul>
+  <li><strong>UI redress:</strong> l’utente crede di interagire con qualcosa di innocuo, ma in realtà agisce su un frame nascosto.</li>
+  <li><strong>Stored o dynamic:</strong> l’overlay può essere servito da un server esterno o inserito in pagamenti, form sensibili, pulsanti di conferma.</li>
+  <li><strong>Obiettivo:</strong> furto di credenziali, conferma di transazioni, modifica di impostazioni.</li>
+</ul>
+
+
+
+
+<h3>4. Mitigazione</h3>
+<p>Per difendersi dal clickjacking è consigliato:</p>
+<ul>
+  <li>
+    <strong>HTTP Header</strong><br>
+    <code>X-Frame-Options: DENY</code> (o <code>SAMEORIGIN</code>) per proibire
+    l’inclusione in iframe da domini esterni.
+  </li>
+  <li>
+    <strong>Content Security Policy</strong><br>
+    <code>Content-Security-Policy: frame-ancestors 'self';</code> per un controllo più granulare.
+  </li>
+  <li>
+    <strong>Frame-busting Script</strong> (secondaria): nel &lt;head&gt; della pagina<br>
+    <code>
+    if (window.top !== window.self) { window.top.location = window.self.location; }
+    </code>
+  </li>
+</ul>
+
+<p><strong>Risultato:</strong> dopo aver configurato gli header sul server,
+qualsiasi tentativo di caricare la pagina in un iframe esterno verrà bloccato
+dal browser, neutralizzando l’attacco di clickjacking.</p>
+
+
+
 
 <h2>BONUS 4: Risultati della scansione OWASP ZAP</h2>
 
