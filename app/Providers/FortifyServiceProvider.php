@@ -52,7 +52,8 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::registerView(function () {
             return view('auth.register');
         });
-
+        
+        /*ratelimiter per il login per 5 minuti*/
         RateLimiter::for('login', function (Request $request) {
         $email = (string) $request->email;
 
